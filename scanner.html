@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scanner 16 – ZXing</title>
+<meta name="theme-color" content="#0b1220">
+<style>
+  :root{--ink:#0f172a;--muted:#475569;--bg:#0b1220;--panel:#0f172a;--accent:#22c55e}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#050814,#0b1220);}
+  body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;color:#e5e7eb;display:flex;align-items:center;justify-content:center}
+  .app{width:min(920px,94vw);display:grid;gap:14px}
+  .card{background:#0f172a;border:1px solid #1f2937;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .row{display:grid;gap:12px}
+  .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+  .pad{padding:14px 16px}
+  h1{font-size:1.2rem;margin:0 0 6px}
+  label{font-size:.9rem;color:#a1a1aa}
+  select,button,input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
+  button{cursor:pointer;font-weight:600}
+  .btn{background:#111827;border:1px solid #374151}
+  .btn-primary{background:var(--accent);color:#03110a;border:0}
+  .btn-ghost{background:transparent;border:1px dashed #334155;color:#cbd5e1}
+  .ok{color:#86efac}
+  .warn{color:#fbbf24}
+  .err{color:#f87171}
+  video{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:#0b1220;border:1px solid #334155;padding:6px 8px;border-radius:999px;font-family:ui-monospace,Consolas,monospace}
+  .mono{font-family:ui-monospace,Consolas,monospace}
+  .footer{font-size:.85rem;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card pad">
+    <h1>📷 Scanner 16 (QR/DM/1D) – senza Telegram</h1>
+    <div class="grid">
+      <div class="row">
+        <label for="cameraSel">Fotocamera</label>
+        <select id="cameraSel"></select>
+      </div>
+      <div class="row">
+        <label>&nbsp;</label>
+        <div class="grid">
+          <button id="btnStart" class="btn-primary">Avvia</button>
+          <button id="btnStop" class="btn">Stop</button>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <video id="preview" playsinline muted></video>
+      <div class="chips" id="hints">
+        <span class="chip">Regola: <strong>solo blocchi da 16</strong></span>
+        <span class="chip">Dedup attivo</span>
+        <span class="chip">Auto-UPPERCASE</span>
+        <span class="chip">Batch con “16 16 16 …”</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card pad">
+    <div class="grid">
+      <div class="row">
+        <label>Ultimo risultato</label>
+        <div id="last" class="mono ok">—</div>
+      </div>
+      <div class="row">
+        <label>Stato</label>
+        <div id="status" class="mono warn">In attesa…</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label>Raccolta (spazio-separati)</label>
+      <textarea id="bag" rows="3" class="mono" placeholder="VUOTO"></textarea>
+      <div class="grid">
+        <button id="btnCopy" class="btn">Copia negli appunti</button>
+        <button id="btnClear" class="btn-ghost">Svuota</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card pad">
+    <h1>Invio al backend o al Bot</h1>
+    <div class="grid">
+      <input id="endpoint" placeholder="https://tuo-backend/scanner/push (opzionale fuori Telegram)" />
+      <input id="token" placeholder="Bearer <TOKEN> (opzionale)" />
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <button id="btnSend" class="btn-primary">Invia</button>
+      <button id="btnDownload" class="btn">Scarica CSV</button>
+    </div>
+    <div class="footer" style="margin-top:8px">
+      Suggerimento: usa questa pagina <b>dentro Telegram</b> come WebApp per inviare i dati direttamente al bot,
+      oppure <b>fuori da Telegram</b> per copiare/CSV o inviare al tuo endpoint.
+    </div>
+  </div>
+</div>
+
+<!-- ZXing WASM -->
+<script src="https://unpkg.com/@zxing/browser@1.3.3/umd/index.min.js"></script>
+<script>
+  // ==== Util 16-caratteri ====
+  const CODICE_LEN = 16;
+  const dedup = new Set();
+  const bag = [];
+
+  function _normalize(raw){
+    if(!raw) return [];
+    let s = String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if (s.length === CODICE_LEN) return [s];
+    if (s.length > CODICE_LEN && s.length % CODICE_LEN === 0) {
+      const out = [];
+      for (let i=0;i<s.length;i+=CODICE_LEN) out.push(s.slice(i,i+CODICE_LEN));
+      return out;
+    }
+    return []; // scarta tutto ciò che non è multiplo di 16
+  }
+
+  function addCodes(codes) {
+    let added = 0;
+    for(const c of codes){
+      if (c.length !== CODICE_LEN) continue;
+      if (!dedup.has(c)) {
+        dedup.add(c); bag.push(c); added++;
+      }
+    }
+    document.getElementById('bag').value = bag.join(' ');
+    return added;
+  }
+
+  // ==== Beep/Vibra ====
+  const beep = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AAD//wAA');
+  function ding(){ try{beep.currentTime=0;beep.play();}catch(e){} if(navigator.vibrate) navigator.vibrate(50); }
+
+  // ==== ZXing Reader ====
+  const { BrowserMultiFormatReader, BrowserCodeReader, DecodeHintType, BarcodeFormat } = ZXingBrowser;
+  const hints = new Map();
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.QR_CODE,
+    BarcodeFormat.DATA_MATRIX,
+    BarcodeFormat.CODE_128,
+    BarcodeFormat.CODE_39,
+    BarcodeFormat.EAN_13,
+    BarcodeFormat.EAN_8,
+    BarcodeFormat.ITF,
+    BarcodeFormat.UPC_A,
+  ]);
+  const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 200 });
+
+  const video = document.getElementById('preview');
+  const cameraSel = document.getElementById('cameraSel');
+  const statusEl = document.getElementById('status');
+  const lastEl = document.getElementById('last');
+
+  async function listCams(){
+    const devices = await BrowserCodeReader.listVideoInputDevices();
+    cameraSel.innerHTML = '';
+    devices.forEach((d,i)=>{
+      const opt = document.createElement('option');
+      opt.value = d.deviceId; opt.text = d.label || `Camera ${i+1}`;
+      cameraSel.appendChild(opt);
+    });
+    const back = Array.from(cameraSel.options).find(o => /back|rear|post/i.test(o.text));
+    if(back) cameraSel.value = back.value;
+  }
+
+  async function start(){
+    const devId = cameraSel.value || undefined;
+    statusEl.textContent = 'Scanning...';
+    await reader.decodeFromVideoDevice(devId, video, (result, err) => {
+      if (result) {
+        const chunks = _normalize(result.getText());
+        const added = addCodes(chunks);
+        if (added>0){ lastEl.textContent = chunks.join(' '); ding(); }
+      }
+    });
+  }
+
+  async function stop(){
+    reader.reset();
+    statusEl.textContent = 'In attesa…';
+  }
+
+  document.getElementById('btnStart').onclick = start;
+  document.getElementById('btnStop').onclick = stop;
+  document.getElementById('btnCopy').onclick = async ()=>{
+    await navigator.clipboard.writeText(bag.join(' '));
+    statusEl.textContent = `Copiati ${bag.length} codici`;
+  };
+  document.getElementById('btnClear').onclick = ()=>{
+    bag.length = 0; dedup.clear(); document.getElementById('bag').value=''; lastEl.textContent='—';
+  };
+  document.getElementById('btnDownload').onclick = ()=>{
+    const csv = 'codice\n' + bag.join('\n');
+    const blob = new Blob([csv], {type:'text/csv'}); 
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'scanner16.csv'; a.click();
+  };
+
+  // Invio: dentro Telegram → tg.sendData; fuori Telegram → fetch endpoint
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  const btnSend = document.getElementById('btnSend');
+  if (tg) {
+    tg.expand();
+    btnSend.textContent = "Invia al bot";
+    btnSend.onclick = () => {
+      tg.sendData(JSON.stringify({ codes: bag }));
+      tg.close();
+    };
+  } else {
+    btnSend.onclick = async ()=>{
+      const endpoint = document.getElementById('endpoint').value.trim();
+      if(!endpoint){ statusEl.textContent='Specifica endpoint'; return; }
+      const token = document.getElementById('token').value.trim();
+      const payload = { codes: bag.slice(), ts: Date.now() };
+      const res = await fetch(endpoint, {
+        method:'POST',
+        headers:{'Content-Type':'application/json', ...(token?{'Authorization':token}:{})},
+        body: JSON.stringify(payload)
+      });
+      statusEl.textContent = res.ok ? `Inviati ${bag.length} codici` : `Errore invio: ${res.status}`;
+    };
+  }
+
+  (async()=>{ await listCams(); })();
+</script>
+</body>
+</html>
