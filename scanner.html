@@ -6,101 +6,110 @@
 <title>Scanner 16 – Basic</title>
 <style>
   :root{
-    --bg:#0b1220; --panel:#0f172a; --ink:#e5e7eb; --muted:#94a3b8;
-    --border:#243b55; --accent:#22c55e;
+    --bg:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --border:#e5e7eb; --panel:#ffffff; --accent:#2563eb; --accent-2:#1d4ed8;
+    --chip:#f1f5f9; --chip-text:#0f172a; --shadow:0 8px 20px rgba(15,23,42,.06);
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial}
-  .wrap{max-width:680px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-  h1{font-size:1.1rem;margin:0}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+  .wrap{max-width:760px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+  h1{font-size:1.25rem;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:.92rem}
   label{font-size:.9rem;color:var(--muted)}
-  select,button,input,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0a1529;color:var(--ink)}
-  .row{display:grid;gap:8px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  @media (max-width:640px){ .grid2{grid-template-columns:1fr} }
-  .btn{cursor:pointer}
-  .btn-primary{background:var(--accent);border-color:transparent;color:#03110a;font-weight:700}
-  video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
+  select,button,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem}
+  textarea{min-height:96px;resize:vertical}
+  .row{display:grid;gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:680px){ .grid2{grid-template-columns:1fr} }
+  .btn{cursor:pointer;background:#f8fafc}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-outline{background:#fff}
+  .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chip{display:inline-block;background:var(--chip);color:var(--chip-text);padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem}
+  video{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;border:1px solid var(--border)}
+  .meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
   .mono{font-family:ui-monospace,Consolas,monospace}
-  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-size:.8rem}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>📷 Scanner 16 <span class="pill">solo blocchi da 16</span></h1>
-    <div class="grid2" style="margin-top:8px">
+    <h1>📷 Scanner 16</h1>
+    <div class="sub">Accetta <b>solo blocchi da 16</b> (alfanumerici, maiuscoli). Se il codice è un multiplo di 16, viene spezzato.</div>
+    <div class="grid2" style="margin-top:12px">
       <div class="row">
         <label for="cameraSel">Fotocamera</label>
-        <select id="cameraSel"></select>
+        <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
       </div>
       <div class="row">
         <label>&nbsp;</label>
-        <div class="grid2">
+        <div class="toolbar">
           <button id="btnStart" class="btn btn-primary">Avvia</button>
-          <button id="btnStop" class="btn">Stop</button>
+          <button id="btnStop" class="btn btn-outline">Stop</button>
         </div>
       </div>
     </div>
-    <div class="row" style="margin-top:8px">
+    <div class="row" style="margin-top:12px">
       <video id="preview" playsinline muted></video>
+      <div class="meta">
+        <span class="chip">Stato: <span id="status" class="mono">In attesa…</span></span>
+        <span class="chip">Ultimo: <span id="last" class="mono">—</span></span>
+        <span class="chip">Totale: <span id="count" class="mono">0</span></span>
+      </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="grid2">
-      <div>
-        <label>Ultimo</label>
-        <div id="last" class="mono">—</div>
-      </div>
-      <div>
-        <label>Stato</label>
-        <div id="status" class="mono">In attesa…</div>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px">
+    <div class="row">
       <label>Raccolta (spazio-separati)</label>
-      <textarea id="bag" rows="3" class="mono" placeholder="VUOTO"></textarea>
+      <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
     </div>
-    <div class="grid2" style="margin-top:8px">
-      <button id="btnCopy" class="btn">Copia</button>
-      <button id="btnCSV" class="btn">CSV</button>
+    <div class="grid2" style="margin-top:10px">
+      <button id="btnCopy" class="btn btn-outline">Copia</button>
+      <button id="btnClear" class="btn btn-outline">Svuota</button>
     </div>
-    <div class="grid2" style="margin-top:8px">
-      <button id="btnClear" class="btn">Svuota</button>
+    <div class="row" style="margin-top:10px">
       <button id="btnSend" class="btn btn-primary">Invia</button>
+      <div class="sub" id="sendHint">Se aperto dentro Telegram, invia i codici al bot. Fuori da Telegram, il pulsante copia è il più comodo.</div>
     </div>
-  </div>
-
-  <div class="card" id="advanced">
-    <label>Endpoint (opzionale fuori Telegram)</label>
-    <input id="endpoint" placeholder="https://tuo-backend/scanner/push">
-    <label style="margin-top:6px">Bearer token (opzionale)</label>
-    <input id="token" placeholder="Bearer <TOKEN>">
   </div>
 </div>
 
 <!-- ZXing UMD: espone 'ZXing' -->
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
-  // ====== Config & stato ======
+  // ===== Config =====
   const CODICE_LEN = 16;
+  let scanning = false;
+  let streamTrack = null;
   let devices = [];
-  let currentTrack = null;
-  const bag = [];      // codici raccolti
+  const bag = [];
   const dedup = new Set();
 
+  // ===== UI refs =====
   const video = document.getElementById('preview');
-  const cameraSel = document.getElementById('cameraSel');
   const statusEl = document.getElementById('status');
   const lastEl = document.getElementById('last');
-  const endpointEl = document.getElementById('endpoint');
-  const tokenEl = document.getElementById('token');
-  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  const countEl = document.getElementById('count');
+  const bagEl = document.getElementById('bag');
+  const cameraSel = document.getElementById('cameraSel');
+  const btnStart = document.getElementById('btnStart');
+  const btnStop  = document.getElementById('btnStop');
+  const btnCopy  = document.getElementById('btnCopy');
+  const btnClear = document.getElementById('btnClear');
+  const btnSend  = document.getElementById('btnSend');
 
-  // ====== Util 16 ======
-  function normalize(raw){
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  if (tg) {
+    document.getElementById('sendHint').textContent = "Invia i codici al bot.";
+    tg.expand();
+  }
+
+  // ===== Utils =====
+  function sanitizeAndSplit(raw){
     if(!raw) return [];
     let s = String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
     if (s.length === CODICE_LEN) return [s];
@@ -109,95 +118,123 @@
       for (let i=0;i<s.length;i+=CODICE_LEN) out.push(s.slice(i,i+CODICE_LEN));
       return out;
     }
-    return []; // scarta tutto ciò che non è multiplo di 16
+    return []; // scarta non-multipli di 16
   }
-  function renderBag(){ document.getElementById('bag').value = bag.join(' '); }
-  function addCodes(codes){
-    let added=0;
-    for(const c of codes){
-      if (c.length!==CODICE_LEN) continue;
-      if(!dedup.has(c)){ dedup.add(c); bag.push(c); added++; }
+  function renderBag(){
+    bagEl.value = bag.join(' ');
+    countEl.textContent = String(bag.length);
+  }
+  function addCodes(arr){
+    let added = 0;
+    for(const c of arr){
+      if (c.length !== CODICE_LEN) continue;
+      if (!dedup.has(c)) { dedup.add(c); bag.push(c); added++; }
     }
-    if(added>0) renderBag();
+    if (added>0) renderBag();
     return added;
   }
 
-  // ====== ZXing setup (UMD: 'ZXing') ======
-  const codeReader = new ZXing.BrowserMultiFormatReader();
+  // ===== Cameras (senza dipendere da API ZXing per i dispositivi) =====
   async function listCameras(){
-    devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-    cameraSel.innerHTML = '';
-    devices.forEach((d,i)=>{
-      const opt = document.createElement('option');
-      opt.value = d.deviceId;
-      opt.textContent = d.label || `Camera ${i+1}`;
-      cameraSel.appendChild(opt);
-    });
-    // prefer back camera se possibile
-    const backIndex = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
-    cameraSel.selectedIndex = backIndex>=0 ? backIndex : 0;
+    try{
+      const all = await navigator.mediaDevices.enumerateDevices();
+      devices = all.filter(d => d.kind === 'videoinput');
+      cameraSel.innerHTML = '';
+      devices.forEach((d,i)=>{
+        const opt = document.createElement('option');
+        opt.value = d.deviceId || '';
+        opt.textContent = d.label || `Camera ${i+1}`;
+        cameraSel.appendChild(opt);
+      });
+      // prefer back camera se indicata dall'user agent
+      const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
+      cameraSel.selectedIndex = backIdx>=0 ? backIdx : 0;
+    }catch(e){
+      statusEl.textContent = 'Impossibile elencare le camere';
+    }
   }
 
+  // ===== Scanner =====
+  const hints = new Map();
+  // Abilita formati comuni (QR, DataMatrix, 1D più diffusi)
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+    ZXing.BarcodeFormat.QR_CODE,
+    ZXing.BarcodeFormat.DATA_MATRIX,
+    ZXing.BarcodeFormat.CODE_128,
+    ZXing.BarcodeFormat.CODE_39,
+    ZXing.BarcodeFormat.EAN_13,
+    ZXing.BarcodeFormat.EAN_8,
+    ZXing.BarcodeFormat.ITF,
+    ZXing.BarcodeFormat.UPC_A
+  ]);
+  const reader = new ZXing.BrowserMultiFormatReader(hints, 300);
+
   async function start(){
-    stop();
-    const devId = devices[cameraSel.selectedIndex]?.deviceId;
-    statusEl.textContent = 'Scanning...';
-    await codeReader.decodeFromVideoDevice(devId, video, (result, err) => {
-      if (result) {
-        const chunks = normalize(result.getText());
-        const added = addCodes(chunks);
-        if (added>0){ lastEl.textContent = chunks.join(' '); }
-      }
-    });
-    const stream = video.srcObject;
-    currentTrack = stream ? stream.getVideoTracks()[0] : null;
+    if (scanning) return;
+    try{
+      // Richiedi permesso camera con il device selezionato
+      const devId = devices[cameraSel.selectedIndex]?.deviceId;
+      const constraints = devId ? { video: { deviceId: { exact: devId } } } : { video: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+      await video.play();
+      streamTrack = stream.getVideoTracks()[0];
+
+      statusEl.textContent = 'Scanning...';
+      scanning = true;
+
+      await reader.decodeFromVideoDevice(devId || null, video, (result, err) => {
+        if (result) {
+          const chunks = sanitizeAndSplit(result.getText());
+          const added = addCodes(chunks);
+          if (added>0) lastEl.textContent = chunks.join(' ');
+        }
+      });
+    }catch(e){
+      statusEl.textContent = 'Permesso camera negato o non disponibile';
+      scanning = false;
+      try{ if(streamTrack) streamTrack.stop(); }catch(_) {}
+      reader.reset();
+    }
   }
+
   function stop(){
-    try{ codeReader.reset(); }catch(e){}
-    try{ if(currentTrack) currentTrack.stop(); }catch(e){}
-    currentTrack = null;
+    if (!scanning) return;
+    scanning = false;
+    try{ reader.reset(); }catch(_){}
+    try{ if(streamTrack) streamTrack.stop(); }catch(_){}
+    streamTrack = null;
     statusEl.textContent = 'In attesa…';
   }
 
-  // ====== UI ======
-  document.getElementById('btnStart').onclick = start;
-  document.getElementById('btnStop').onclick  = stop;
-  cameraSel.onchange = start;
+  // ===== Events =====
+  btnStart.onclick = start;
+  btnStop.onclick  = stop;
+  cameraSel.onchange = ()=>{ if (scanning) { stop(); start(); } };
 
-  document.getElementById('btnCopy').onclick = async ()=>{
-    await navigator.clipboard.writeText(bag.join(' '));
-    statusEl.textContent = `Copiati ${bag.length} codici`;
+  btnCopy.onclick = async ()=>{
+    try{
+      await navigator.clipboard.writeText(bag.join(' '));
+      statusEl.textContent = `Copiati ${bag.length} codici`;
+    }catch(e){
+      statusEl.textContent = 'Clipboard non disponibile';
+    }
   };
-  document.getElementById('btnCSV').onclick = ()=>{
-    const csv = 'codice\\n' + bag.join('\\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'scanner16.csv'; a.click();
-  };
-  document.getElementById('btnClear').onclick = ()=>{
-    bag.length = 0; dedup.clear(); renderBag(); lastEl.textContent='—'; statusEl.textContent='In attesa…';
+  btnClear.onclick = ()=>{
+    bag.length = 0; dedup.clear(); renderBag(); lastEl.textContent = '—'; statusEl.textContent = 'In attesa…';
   };
 
-  const btnSend = document.getElementById('btnSend');
-  if (tg) {
-    document.getElementById('advanced').style.display = 'none';
-    tg.expand();
-    btnSend.textContent = "Invia al bot";
-    btnSend.onclick = ()=>{ tg.sendData(JSON.stringify({ codes: bag })); tg.close(); };
-  } else {
-    btnSend.onclick = async ()=>{
-      const url = endpointEl.value.trim();
-      if(!url){ statusEl.textContent='Specifica endpoint'; return; }
-      const token = tokenEl.value.trim();
-      const res = await fetch(url, {
-        method:'POST',
-        headers:{'Content-Type':'application/json', ...(token?{'Authorization':token}:{})},
-        body: JSON.stringify({ codes: bag, ts: Date.now() })
-      });
-      statusEl.textContent = res.ok ? `Inviati ${bag.length} codici` : `Errore invio: ${res.status}`;
-    };
-  }
+  btnSend.onclick = ()=>{
+    if (tg) {
+      tg.sendData(JSON.stringify({ codes: bag }));
+      tg.close();
+    } else {
+      // Fuori da Telegram: niente endpoint. Mostriamo un hint.
+      statusEl.textContent = 'Usa "Copia" per incollare i codici dove ti serve';
+    }
+  };
 
+  // Avvio: enumerare dispositivi (HTTPS necessario per label)
   (async ()=>{ await listCameras(); })();
 </script>
 </body>
