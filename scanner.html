@@ -12,70 +12,86 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  .container{max-width:800px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:16px}
-  .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
-  .hero{
-    display:flex;align-items:center;gap:14px
-  }
-  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#e2e8f0,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
-  .logo span{font-size:22px}
-  h1{font-size:1.35rem;line-height:1.2;margin:0}
-  .sub{color:var(--muted);font-size:.96rem;margin-top:2px}
+  .container{max-width:900px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+  .header{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:22px}
+  h1{font-size:1.35rem;margin:0}
+  .sub{color:var(--muted);font-size:.95rem;margin-top:2px}
+
+  /* Controls sopra il video */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .toolbar-left{display:flex;gap:10px;align-items:center;flex:1}
+  .toolbar-right{display:flex;gap:10px;align-items:center}
   label{font-size:.9rem;color:var(--muted)}
-  select,button,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
-  textarea{min-height:100px;resize:vertical}
-  .row{display:grid;gap:10px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:720px){ .grid2{grid-template-columns:1fr} }
+  select,button,textarea{padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
+  select{min-width:220px;max-width:100%}
+
   .btn{cursor:pointer;font-weight:700}
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn-primary:hover{background:var(--accent-2)}
   .btn-ghost{background:#f8fafc}
-  video{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;border:1px solid var(--border)}
-  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .btn-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+
+  /* Video grande */
+  .video-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  video{width:100%;height:62vh;min-height:360px;max-height:72vh;background:#000;object-fit:cover;display:block}
+
+  /* Info */
+  .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
   .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem;background:#f8fafc}
   .mono{font-family:ui-monospace,Consolas,monospace}
+
+  /* Raccolta */
+  textarea{min-height:110px;resize:vertical;width:100%}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr} .toolbar{flex-direction:column;align-items:stretch} .toolbar-right{width:100%;justify-content:flex-start} }
 </style>
 </head>
 <body>
 <div class="container">
+
+  <!-- CARD SCAN -->
   <div class="card">
-    <div class="hero">
-      <div class="logo"><span>📷</span></div>
+    <div class="header">
+      <div class="logo">📷</div>
       <div>
         <h1>Scanner 16</h1>
-        <div class="sub">Accetta <b>solo blocchi da 16</b> (alfanumerici, maiuscoli). Se il codice è un multiplo di 16, lo spezza in blocchi.</div>
+        <div class="sub">Accetta <b>solo blocchi da 16</b> (alfanumerici, MAIUSCOLI). Se il codice è un multiplo di 16, lo spezza automaticamente.</div>
       </div>
     </div>
-    <div class="grid2" style="margin-top:14px">
-      <div class="row">
-        <label for="cameraSel">Fotocamera</label>
-        <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
-      </div>
-      <div class="row">
-        <label>&nbsp;</label>
-        <div class="grid2">
-          <button id="btnStart" class="btn btn-primary">Avvia</button>
-          <button id="btnStop" class="btn btn-ghost">Stop</button>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div>
+          <label for="cameraSel">Fotocamera</label><br/>
+          <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
         </div>
       </div>
-    </div>
-    <div class="row" style="margin-top:12px">
-      <video id="preview" playsinline muted></video>
-      <div class="meta">
-        <div class="badge">Stato: <span id="status" class="mono">In attesa…</span></div>
-        <div class="badge">Ultimo: <span id="last" class="mono">—</span></div>
-        <div class="badge">Totale: <span id="count" class="mono">0</span></div>
+      <div class="toolbar-right">
+        <button id="btnFlip" class="btn btn-ghost btn-icon" title="Cambia camera">↺</button>
+        <button id="btnTorch" class="btn btn-ghost btn-icon" title="Torcia">🔦</button>
+        <button id="btnStart" class="btn btn-primary">Avvia</button>
+        <button id="btnStop"  class="btn btn-ghost">Stop</button>
       </div>
+    </div>
+
+    <div class="video-wrap">
+      <video id="preview" playsinline muted></video>
+    </div>
+
+    <div class="badges">
+      <div class="badge">Stato: <span id="status" class="mono">In attesa…</span></div>
+      <div class="badge">Ultimo: <span id="last" class="mono">—</span></div>
+      <div class="badge">Totale: <span id="count" class="mono">0</span></div>
     </div>
   </div>
 
+  <!-- CARD LISTA -->
   <div class="card">
-    <div class="row">
-      <label>Raccolta (spazio-separati)</label>
-      <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
-    </div>
+    <label>Raccolta (spazio-separati)</label>
+    <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
     <div class="grid2" style="margin-top:10px">
       <button id="btnCopy" class="btn btn-ghost">Copia</button>
       <button id="btnClear" class="btn btn-ghost">Svuota</button>
@@ -85,17 +101,14 @@
       <div class="sub" id="sendHint">Apri dentro Telegram per inviare direttamente al bot; altrimenti usa “Copia”.</div>
     </div>
   </div>
+
 </div>
 
 <!-- ZXing UMD (global: ZXing) -->
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
-  // ===== Config =====
+  // ===== Config & stato =====
   const CODICE_LEN = 16;
-  let scanning = false;
-  let devices = [];
-  let selectedIndex = 0;
-
   const reader = new ZXing.BrowserMultiFormatReader(
     new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS, [
       ZXing.BarcodeFormat.QR_CODE,
@@ -110,8 +123,15 @@
     250
   );
 
-  // ===== State =====
+  let scanning = false;
+  let devices = [];
+  let currentIndex = 0;
+  let currentTrack = null;
+  let torchOn = false;
+
   const bag = []; const dedup = new Set();
+  let lastShown = "";          // per evitare update inutili
+  let lastUiTick = 0;          // throttle UI
 
   // ===== UI refs =====
   const video = document.getElementById('preview');
@@ -120,8 +140,11 @@
   const lastEl = document.getElementById('last');
   const countEl = document.getElementById('count');
   const bagEl = document.getElementById('bag');
+
   const btnStart = document.getElementById('btnStart');
   const btnStop  = document.getElementById('btnStop');
+  const btnFlip  = document.getElementById('btnFlip');
+  const btnTorch = document.getElementById('btnTorch');
   const btnCopy  = document.getElementById('btnCopy');
   const btnClear = document.getElementById('btnClear');
   const btnSend  = document.getElementById('btnSend');
@@ -140,53 +163,65 @@
     }
     return []; // scarta non multipli di 16
   }
-  function renderBag(){ bagEl.value = bag.join(' '); countEl.textContent = String(bag.length); }
+  function renderBag(){
+    bagEl.value = bag.join(' ');
+    countEl.textContent = String(bag.length);
+  }
   function addCodes(arr){
-    let added=0;
+    let added = 0;
     for(const c of arr){
       if (c.length!==CODICE_LEN) continue;
       if(!dedup.has(c)){ dedup.add(c); bag.push(c); added++; }
     }
-    if(added>0) renderBag();
+    if (added>0) renderBag();
     return added;
   }
+  function uiUpdateLast(text){
+    // throttle 120ms + rAF per forzare repaint su mobile
+    const now = performance.now();
+    if (now - lastUiTick < 120) return;
+    lastUiTick = now;
+    requestAnimationFrame(()=>{ lastEl.textContent = text; });
+  }
 
-  // ===== Cameras =====
-  async function populateCamerasAfterPermission(){
+  // ===== Devices =====
+  async function listCamerasAfterPermission(){
     try{
       const all = await navigator.mediaDevices.enumerateDevices();
-      const cams = all.filter(d => d.kind === 'videoinput');
-      if (!cams.length) return;
-      devices = cams;
+      devices = all.filter(d => d.kind === 'videoinput');
       cameraSel.innerHTML = '';
-      cams.forEach((d,i)=>{
+      devices.forEach((d,i)=>{
         const opt = document.createElement('option');
         opt.value = d.deviceId || '';
         opt.textContent = d.label || `Camera ${i+1}`;
         cameraSel.appendChild(opt);
       });
-      // prefer back camera quando possibile
-      const backIdx = cams.findIndex(d => /back|rear|post/i.test(d.label||''));
-      selectedIndex = backIdx>=0 ? backIdx : 0;
-      cameraSel.selectedIndex = selectedIndex;
+      const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
+      currentIndex = backIdx>=0 ? backIdx : 0;
+      cameraSel.selectedIndex = currentIndex;
     }catch(e){}
   }
 
-  async function start(deviceId){
+  // ===== Start/Stop =====
+  async function start(devId){
     if (scanning) return;
-    scanning = true;
-    btnStart.disabled = true;
-    statusEl.textContent = 'Apertura camera…';
+    scanning = true; btnStart.disabled = true; statusEl.textContent = 'Apertura camera…';
     try{
-      await reader.decodeFromVideoDevice(deviceId || null, video, (result, err) => {
+      await reader.decodeFromVideoDevice(devId || null, video, (result, err) => {
         if (result) {
-          const chunks = sanitizeAndSplit(result.getText());
-          const added = addCodes(chunks);
-          if (added>0) lastEl.textContent = chunks.join(' ');
+          const text = result.getText();
+          if (text && text !== lastShown) {
+            lastShown = text;
+            const chunks = sanitizeAndSplit(text);
+            const added = addCodes(chunks);
+            if (added>0) uiUpdateLast(chunks.join(' '));
+          }
         }
       });
-      // Una volta aperta la camera, popoliamo la select con etichette (evita doppi permessi su mobile)
-      if (!devices.length) { await populateCamerasAfterPermission(); }
+      // cattura il track per torcia
+      const stream = video.srcObject;
+      currentTrack = stream ? stream.getVideoTracks()[0] : null;
+      if (!devices.length) await listCamerasAfterPermission();
       statusEl.textContent = 'Scanning...';
     }catch(e){
       statusEl.textContent = 'Camera non disponibile o permesso negato';
@@ -194,37 +229,45 @@
       try{ reader.reset(); }catch(_){}
     }
   }
-
   function stop(){
     if (!scanning) return;
-    scanning = false;
+    scanning = false; btnStart.disabled = false;
     try{ reader.reset(); }catch(_){}
+    try{ if(currentTrack) currentTrack.stop(); }catch(_){}
+    currentTrack = null; torchOn = false;
     statusEl.textContent = 'In attesa…';
-    btnStart.disabled = false;
+  }
+
+  // ===== Extra: flip & torch =====
+  async function flipCamera(){
+    if (!devices.length) return;
+    currentIndex = (currentIndex + 1) % devices.length;
+    cameraSel.selectedIndex = currentIndex;
+    if (scanning) { stop(); await start(devices[currentIndex]?.deviceId); }
+  }
+  async function toggleTorch(){
+    if (!currentTrack) { statusEl.textContent = 'Torcia non disponibile'; return; }
+    try{
+      await currentTrack.applyConstraints({ advanced: [{ torch: !torchOn }] });
+      torchOn = !torchOn;
+      statusEl.textContent = torchOn ? 'Torcia ON' : 'Torcia OFF';
+    }catch(e){
+      statusEl.textContent = 'Torcia non supportata';
+    }
   }
 
   // ===== Events =====
-  btnStart.onclick = ()=> {
-    const devId = devices.length ? devices[cameraSel.selectedIndex]?.deviceId : undefined;
-    start(devId);
-  };
-  btnStop.onclick = stop;
+  btnStart.onclick = ()=>{ const devId = devices[currentIndex]?.deviceId; start(devId); };
+  btnStop.onclick  = stop;
+  btnFlip.onclick  = flipCamera;
+  btnTorch.onclick = toggleTorch;
+  cameraSel.onchange = ()=>{ if (!devices.length) return; currentIndex = cameraSel.selectedIndex||0; if (scanning){ stop(); start(devices[currentIndex]?.deviceId); } };
 
-  cameraSel.onchange = ()=>{
-    if (!devices.length) return;
-    selectedIndex = cameraSel.selectedIndex || 0;
-    if (scanning) { stop(); const devId = devices[selectedIndex]?.deviceId; start(devId); }
-  };
+  btnCopy.onclick = async ()=>{ try{ await navigator.clipboard.writeText(bag.join(' ')); statusEl.textContent = `Copiati ${bag.length} codici`; }catch(e){ statusEl.textContent = 'Clipboard non disponibile'; } };
+  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderBag(); lastShown=""; lastEl.textContent='—'; statusEl.textContent='In attesa…'; };
 
-  btnCopy.onclick = async ()=>{
-    try{ await navigator.clipboard.writeText(bag.join(' ')); statusEl.textContent = `Copiati ${bag.length} codici`; }
-    catch(e){ statusEl.textContent = 'Clipboard non disponibile'; }
-  };
-  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderBag(); lastEl.textContent='—'; statusEl.textContent='In attesa…'; };
+  btnSend.onclick = ()=>{ if (tg) { tg.sendData(JSON.stringify({ codes: bag })); tg.close(); } };
 
-  btnSend.onclick = ()=>{
-    if (tg) { tg.sendData(JSON.stringify({ codes: bag })); tg.close(); }
-  };
 </script>
 </body>
 </html>
