@@ -3,61 +3,70 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Scanner 16 – Basic</title>
+<title>Scanner 16</title>
 <style>
   :root{
     --bg:#ffffff; --ink:#0f172a; --muted:#64748b;
-    --border:#e5e7eb; --panel:#ffffff; --accent:#2563eb; --accent-2:#1d4ed8;
-    --chip:#f1f5f9; --chip-text:#0f172a; --shadow:0 8px 20px rgba(15,23,42,.06);
+    --border:#e5e7eb; --accent:#2563eb; --accent-2:#1e40af;
+    --shadow:0 10px 30px rgba(2,6,23,.06);
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  .wrap{max-width:760px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:16px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
-  h1{font-size:1.25rem;margin:0 0 6px}
-  .sub{color:var(--muted);font-size:.92rem}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+  .container{max-width:800px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+  .hero{
+    display:flex;align-items:center;gap:14px
+  }
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#e2e8f0,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+  .logo span{font-size:22px}
+  h1{font-size:1.35rem;line-height:1.2;margin:0}
+  .sub{color:var(--muted);font-size:.96rem;margin-top:2px}
   label{font-size:.9rem;color:var(--muted)}
-  select,button,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem}
-  textarea{min-height:96px;resize:vertical}
+  select,button,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
+  textarea{min-height:100px;resize:vertical}
   .row{display:grid;gap:10px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:680px){ .grid2{grid-template-columns:1fr} }
-  .btn{cursor:pointer;background:#f8fafc}
+  @media (max-width:720px){ .grid2{grid-template-columns:1fr} }
+  .btn{cursor:pointer;font-weight:700}
   .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn-primary:hover{background:var(--accent-2)}
-  .btn-outline{background:#fff}
-  .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .chip{display:inline-block;background:var(--chip);color:var(--chip-text);padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem}
+  .btn-ghost{background:#f8fafc}
   video{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;border:1px solid var(--border)}
-  .meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem;background:#f8fafc}
   .mono{font-family:ui-monospace,Consolas,monospace}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="container">
   <div class="card">
-    <h1>📷 Scanner 16</h1>
-    <div class="sub">Accetta <b>solo blocchi da 16</b> (alfanumerici, maiuscoli). Se il codice è un multiplo di 16, viene spezzato.</div>
-    <div class="grid2" style="margin-top:12px">
+    <div class="hero">
+      <div class="logo"><span>📷</span></div>
+      <div>
+        <h1>Scanner 16</h1>
+        <div class="sub">Accetta <b>solo blocchi da 16</b> (alfanumerici, maiuscoli). Se il codice è un multiplo di 16, lo spezza in blocchi.</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
       <div class="row">
         <label for="cameraSel">Fotocamera</label>
         <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
       </div>
       <div class="row">
         <label>&nbsp;</label>
-        <div class="toolbar">
+        <div class="grid2">
           <button id="btnStart" class="btn btn-primary">Avvia</button>
-          <button id="btnStop" class="btn btn-outline">Stop</button>
+          <button id="btnStop" class="btn btn-ghost">Stop</button>
         </div>
       </div>
     </div>
     <div class="row" style="margin-top:12px">
       <video id="preview" playsinline muted></video>
       <div class="meta">
-        <span class="chip">Stato: <span id="status" class="mono">In attesa…</span></span>
-        <span class="chip">Ultimo: <span id="last" class="mono">—</span></span>
-        <span class="chip">Totale: <span id="count" class="mono">0</span></span>
+        <div class="badge">Stato: <span id="status" class="mono">In attesa…</span></div>
+        <div class="badge">Ultimo: <span id="last" class="mono">—</span></div>
+        <div class="badge">Totale: <span id="count" class="mono">0</span></div>
       </div>
     </div>
   </div>
@@ -68,45 +77,56 @@
       <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
     </div>
     <div class="grid2" style="margin-top:10px">
-      <button id="btnCopy" class="btn btn-outline">Copia</button>
-      <button id="btnClear" class="btn btn-outline">Svuota</button>
+      <button id="btnCopy" class="btn btn-ghost">Copia</button>
+      <button id="btnClear" class="btn btn-ghost">Svuota</button>
     </div>
     <div class="row" style="margin-top:10px">
-      <button id="btnSend" class="btn btn-primary">Invia</button>
-      <div class="sub" id="sendHint">Se aperto dentro Telegram, invia i codici al bot. Fuori da Telegram, il pulsante copia è il più comodo.</div>
+      <button id="btnSend" class="btn btn-primary" style="display:none">Invia al bot</button>
+      <div class="sub" id="sendHint">Apri dentro Telegram per inviare direttamente al bot; altrimenti usa “Copia”.</div>
     </div>
   </div>
 </div>
 
-<!-- ZXing UMD: espone 'ZXing' -->
+<!-- ZXing UMD (global: ZXing) -->
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
   // ===== Config =====
   const CODICE_LEN = 16;
   let scanning = false;
-  let streamTrack = null;
   let devices = [];
-  const bag = [];
-  const dedup = new Set();
+  let selectedIndex = 0;
+
+  const reader = new ZXing.BrowserMultiFormatReader(
+    new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.DATA_MATRIX,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.UPC_A
+    ]]]),
+    250
+  );
+
+  // ===== State =====
+  const bag = []; const dedup = new Set();
 
   // ===== UI refs =====
   const video = document.getElementById('preview');
+  const cameraSel = document.getElementById('cameraSel');
   const statusEl = document.getElementById('status');
   const lastEl = document.getElementById('last');
   const countEl = document.getElementById('count');
   const bagEl = document.getElementById('bag');
-  const cameraSel = document.getElementById('cameraSel');
   const btnStart = document.getElementById('btnStart');
   const btnStop  = document.getElementById('btnStop');
   const btnCopy  = document.getElementById('btnCopy');
   const btnClear = document.getElementById('btnClear');
   const btnSend  = document.getElementById('btnSend');
-
   const tg = window.Telegram ? window.Telegram.WebApp : null;
-  if (tg) {
-    document.getElementById('sendHint').textContent = "Invia i codici al bot.";
-    tg.expand();
-  }
+  if (tg) { tg.expand(); btnSend.style.display = 'block'; document.getElementById('sendHint').style.display='none'; }
 
   // ===== Utils =====
   function sanitizeAndSplit(raw){
@@ -118,83 +138,60 @@
       for (let i=0;i<s.length;i+=CODICE_LEN) out.push(s.slice(i,i+CODICE_LEN));
       return out;
     }
-    return []; // scarta non-multipli di 16
+    return []; // scarta non multipli di 16
   }
-  function renderBag(){
-    bagEl.value = bag.join(' ');
-    countEl.textContent = String(bag.length);
-  }
+  function renderBag(){ bagEl.value = bag.join(' '); countEl.textContent = String(bag.length); }
   function addCodes(arr){
-    let added = 0;
+    let added=0;
     for(const c of arr){
-      if (c.length !== CODICE_LEN) continue;
-      if (!dedup.has(c)) { dedup.add(c); bag.push(c); added++; }
+      if (c.length!==CODICE_LEN) continue;
+      if(!dedup.has(c)){ dedup.add(c); bag.push(c); added++; }
     }
-    if (added>0) renderBag();
+    if(added>0) renderBag();
     return added;
   }
 
-  // ===== Cameras (senza dipendere da API ZXing per i dispositivi) =====
-  async function listCameras(){
+  // ===== Cameras =====
+  async function populateCamerasAfterPermission(){
     try{
       const all = await navigator.mediaDevices.enumerateDevices();
-      devices = all.filter(d => d.kind === 'videoinput');
+      const cams = all.filter(d => d.kind === 'videoinput');
+      if (!cams.length) return;
+      devices = cams;
       cameraSel.innerHTML = '';
-      devices.forEach((d,i)=>{
+      cams.forEach((d,i)=>{
         const opt = document.createElement('option');
         opt.value = d.deviceId || '';
         opt.textContent = d.label || `Camera ${i+1}`;
         cameraSel.appendChild(opt);
       });
-      // prefer back camera se indicata dall'user agent
-      const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
-      cameraSel.selectedIndex = backIdx>=0 ? backIdx : 0;
-    }catch(e){
-      statusEl.textContent = 'Impossibile elencare le camere';
-    }
+      // prefer back camera quando possibile
+      const backIdx = cams.findIndex(d => /back|rear|post/i.test(d.label||''));
+      selectedIndex = backIdx>=0 ? backIdx : 0;
+      cameraSel.selectedIndex = selectedIndex;
+    }catch(e){}
   }
 
-  // ===== Scanner =====
-  const hints = new Map();
-  // Abilita formati comuni (QR, DataMatrix, 1D più diffusi)
-  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-    ZXing.BarcodeFormat.QR_CODE,
-    ZXing.BarcodeFormat.DATA_MATRIX,
-    ZXing.BarcodeFormat.CODE_128,
-    ZXing.BarcodeFormat.CODE_39,
-    ZXing.BarcodeFormat.EAN_13,
-    ZXing.BarcodeFormat.EAN_8,
-    ZXing.BarcodeFormat.ITF,
-    ZXing.BarcodeFormat.UPC_A
-  ]);
-  const reader = new ZXing.BrowserMultiFormatReader(hints, 300);
-
-  async function start(){
+  async function start(deviceId){
     if (scanning) return;
+    scanning = true;
+    btnStart.disabled = true;
+    statusEl.textContent = 'Apertura camera…';
     try{
-      // Richiedi permesso camera con il device selezionato
-      const devId = devices[cameraSel.selectedIndex]?.deviceId;
-      const constraints = devId ? { video: { deviceId: { exact: devId } } } : { video: true };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      video.srcObject = stream;
-      await video.play();
-      streamTrack = stream.getVideoTracks()[0];
-
-      statusEl.textContent = 'Scanning...';
-      scanning = true;
-
-      await reader.decodeFromVideoDevice(devId || null, video, (result, err) => {
+      await reader.decodeFromVideoDevice(deviceId || null, video, (result, err) => {
         if (result) {
           const chunks = sanitizeAndSplit(result.getText());
           const added = addCodes(chunks);
           if (added>0) lastEl.textContent = chunks.join(' ');
         }
       });
+      // Una volta aperta la camera, popoliamo la select con etichette (evita doppi permessi su mobile)
+      if (!devices.length) { await populateCamerasAfterPermission(); }
+      statusEl.textContent = 'Scanning...';
     }catch(e){
-      statusEl.textContent = 'Permesso camera negato o non disponibile';
-      scanning = false;
-      try{ if(streamTrack) streamTrack.stop(); }catch(_) {}
-      reader.reset();
+      statusEl.textContent = 'Camera non disponibile o permesso negato';
+      scanning = false; btnStart.disabled = false;
+      try{ reader.reset(); }catch(_){}
     }
   }
 
@@ -202,40 +199,32 @@
     if (!scanning) return;
     scanning = false;
     try{ reader.reset(); }catch(_){}
-    try{ if(streamTrack) streamTrack.stop(); }catch(_){}
-    streamTrack = null;
     statusEl.textContent = 'In attesa…';
+    btnStart.disabled = false;
   }
 
   // ===== Events =====
-  btnStart.onclick = start;
-  btnStop.onclick  = stop;
-  cameraSel.onchange = ()=>{ if (scanning) { stop(); start(); } };
+  btnStart.onclick = ()=> {
+    const devId = devices.length ? devices[cameraSel.selectedIndex]?.deviceId : undefined;
+    start(devId);
+  };
+  btnStop.onclick = stop;
+
+  cameraSel.onchange = ()=>{
+    if (!devices.length) return;
+    selectedIndex = cameraSel.selectedIndex || 0;
+    if (scanning) { stop(); const devId = devices[selectedIndex]?.deviceId; start(devId); }
+  };
 
   btnCopy.onclick = async ()=>{
-    try{
-      await navigator.clipboard.writeText(bag.join(' '));
-      statusEl.textContent = `Copiati ${bag.length} codici`;
-    }catch(e){
-      statusEl.textContent = 'Clipboard non disponibile';
-    }
+    try{ await navigator.clipboard.writeText(bag.join(' ')); statusEl.textContent = `Copiati ${bag.length} codici`; }
+    catch(e){ statusEl.textContent = 'Clipboard non disponibile'; }
   };
-  btnClear.onclick = ()=>{
-    bag.length = 0; dedup.clear(); renderBag(); lastEl.textContent = '—'; statusEl.textContent = 'In attesa…';
-  };
+  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderBag(); lastEl.textContent='—'; statusEl.textContent='In attesa…'; };
 
   btnSend.onclick = ()=>{
-    if (tg) {
-      tg.sendData(JSON.stringify({ codes: bag }));
-      tg.close();
-    } else {
-      // Fuori da Telegram: niente endpoint. Mostriamo un hint.
-      statusEl.textContent = 'Usa "Copia" per incollare i codici dove ti serve';
-    }
+    if (tg) { tg.sendData(JSON.stringify({ codes: bag })); tg.close(); }
   };
-
-  // Avvio: enumerare dispositivi (HTTPS necessario per label)
-  (async ()=>{ await listCameras(); })();
 </script>
 </body>
 </html>
