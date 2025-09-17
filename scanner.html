@@ -3,351 +3,417 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Scanner 16</title>
+<title>Scanner 16 – OpsHub</title>
 <style>
+  /* ====== Tema OpsHub minimal ====== */
   :root{
-    --bg:#ffffff; --ink:#0f172a; --muted:#64748b;
-    --border:#e5e7eb; --accent:#2563eb; --accent-2:#1e40af;
-    --shadow:0 10px 30px rgba(2,6,23,.06);
+    --bg:#ffffff;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --border:#e5e7eb;
+    --blue:#1e3a8a;       /* OpsHub primary dark */
+    --blue-2:#3b82f6;     /* OpsHub primary */
+    --accent:#2563eb;     /* CTA */
+    --accent-2:#1e40af;   /* CTA hover */
+    --panel:#ffffff;
+    --glass:rgba(255,255,255,.92);
+    --shadow:0 12px 32px rgba(2,6,23,.18);
+    --chip:#eef2ff;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  .container{max-width:920px;margin:0 auto;padding:18px;display:flex;flex-direction:column;gap:14px}
-  .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:14px}
-  .header{display:flex;align-items:center;gap:10px}
-  .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:18px}
-  h1{font-size:1.2rem;margin:0}
-  .sub{color:var(--muted);font-size:.9rem;margin-top:2px}
+  .container{max-width:1060px;margin:0 auto;padding:8px}
+  .video-wrap{
+    position:relative;
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(2,6,23,.06);
+    background:#000;
+  }
+  video#preview{
+    width:100%;
+    height:82vh;
+    min-height:440px;
+    max-height:88vh;
+    object-fit:cover;
+    display:block;
+    background:#000;
+  }
 
-  /* Toolbar minimal */
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .toolbar-left{display:flex;gap:8px;align-items:center;flex:1}
-  .toolbar-right{display:flex;gap:8px;align-items:center}
-  label{font-size:.85rem;color:var(--muted)}
-  select,button,textarea{padding:11px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
-  select{min-width:220px;max-width:100%}
-  .btn{cursor:pointer;font-weight:700}
-  .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn-primary:hover{background:var(--accent-2)}
-  .btn-ghost{background:#f8fafc}
-  .btn-icon{width:46px;height:46px;display:flex;align-items:center;justify-content:center}
+  /* ====== Overlay common ====== */
+  .ov{
+    position:absolute; left:50%; transform:translateX(-50%);
+    z-index:9999;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--glass); backdrop-filter:blur(10px);
+    border:1px solid var(--border);
+    border-radius:16px; padding:10px 12px;
+    box-shadow:var(--shadow);
+    width:calc(100% - 16px);
+    max-width:980px;
+  }
+  .ov.top{ top:10px }
+  .ov.bottom{ bottom:calc(10px + env(safe-area-inset-bottom,0px)) }
 
-  /* Video grande, pochi fronzoli */
-  .video-wrap{border:1px solid var(--border);border-radius:14px;overflow:hidden}
-  video{width:100%;height:80vh;min-height:420px;max-height:85vh;background:#000;object-fit:cover;display:block}
+  .ov .sp{flex:1}
+  .sel{
+    min-width:240px; height:46px; border:1px solid var(--border);
+    border-radius:12px; padding:0 12px; background:#fff; color:var(--ink);
+    font-size:1rem;
+  }
+  .btn{
+    height:46px; padding:0 16px; border-radius:14px; border:1px solid var(--border);
+    background:#fff; color:var(--ink); font-weight:700; cursor:pointer;
+  }
+  .btn:hover{ background:#f8fafc }
+  .btn:active{ transform:translateY(1px) }
+  .btn-icon{
+    width:46px; height:46px; padding:0; border-radius:999px; display:flex; place-content:center;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--blue-2),var(--blue));
+    color:#fff; border-color:transparent;
+    box-shadow:0 8px 18px rgba(30,58,138,.28);
+  }
+  .btn-primary:hover{ filter:brightness(0.96) }
 
-  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem;background:#f8fafc}
-  .mono{font-family:ui-monospace,Consolas,monospace}
+  .badge{
+    padding:6px 12px; border-radius:999px; border:1px solid var(--border);
+    background:#f8fafc; font-size:.9rem;
+  }
+  .chip{
+    padding:6px 10px; border-radius:999px; border:1px solid var(--border);
+    background:var(--chip); font-family:ui-monospace,Consolas,monospace; font-size:.9rem;
+  }
 
-  textarea{min-height:110px;resize:vertical;width:100%}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  /* ====== Drawer matricole (overlay laterale) ====== */
+  .drawer{
+    position:absolute; right:12px; bottom:72px; /* sopra la bottom bar */
+    z-index:9998;
+    width:min(380px, calc(100% - 24px));
+    max-height:60vh;
+    display:flex; flex-direction:column; gap:8px;
+    background:var(--glass); backdrop-filter:blur(10px);
+    border:1px solid var(--border); border-radius:16px;
+    box-shadow:var(--shadow);
+    overflow:hidden; opacity:0; transform:translateY(8px); pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .drawer.open{ opacity:1; transform:translateY(0); pointer-events:auto }
+  .drawer .head{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:linear-gradient(135deg,#f8fafc,#fff);
+    border-bottom:1px solid var(--border);
+  }
+  .drawer .title{ font-weight:700 }
+  .drawer .body{ padding:8px 10px; overflow:auto }
+  .drawer .list{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px }
+  .drawer .row{
+    display:flex; align-items:center; gap:8px; justify-content:space-between;
+    border:1px solid var(--border); border-radius:12px; background:#fff; padding:6px 8px;
+  }
+  .drawer .code{ font-family:ui-monospace,Consolas,monospace; font-size:.95rem; letter-spacing:.5px }
+  .drawer .x{ border:none; background:#fee2e2; color:#991b1b; border-radius:10px; padding:6px 8px; cursor:pointer; font-weight:700 }
+  .drawer .x:hover{ filter:brightness(.96) }
+
+  /* ====== Toast stato (in alto a destra) ====== */
+  .toast{
+    position:absolute; right:12px; top:12px; z-index:10000;
+    background:#0ea5e9; color:white; border-radius:12px; padding:8px 12px; box-shadow:var(--shadow); font-weight:700; display:none;
+  }
+  .toast.show{ display:block }
+
   @media (max-width:760px){
-    .grid2{grid-template-columns:1fr}
-    .toolbar{flex-direction:column;align-items:stretch}
-    .toolbar-right{width:100%;justify-content:flex-start}
-    video{height:78vh;min-height:360px}
+    .sel{min-width:unset; width:100%}
+    video#preview{height:78vh; min-height:360px}
   }
 </style>
 </head>
 <body>
-<div class="container">
-
-  <!-- CARD SCAN -->
-  <div class="card">
-    <div class="header">
-      <div class="logo">📷</div>
-      <div>
-        <h1>Scanner 16</h1>
-        <div class="sub">Solo <b>blocchi da 16</b> (alfanumerici, MAIUSCOLI). I multipli di 16 vengono spezzati automaticamente.</div>
-      </div>
-    </div>
-
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <div>
-          <label for="cameraSel">Fotocamera (memorizzata)</label><br/>
-          <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
-        </div>
-      </div>
-      <div class="toolbar-right">
-        <button id="btnFlip"  class="btn btn-ghost btn-icon" title="Cambia camera">↺</button>
-        <button id="btnTorch" class="btn btn-ghost btn-icon" title="Torcia">🔦</button>
-        <button id="btnStart" class="btn btn-primary">Avvia</button>
-        <button id="btnStop"  class="btn btn-ghost">Stop</button>
-      </div>
-    </div>
-
+  <div class="container">
     <div class="video-wrap">
       <video id="preview" playsinline muted></video>
-    </div>
 
-    <div class="badges">
-      <div class="badge">Stato: <span id="status" class="mono">In attesa…</span></div>
-      <div class="badge">Ultimo: <span id="last" class="mono">—</span></div>
-      <div class="badge">Totale: <span id="count" class="mono">0</span></div>
+      <!-- Overlay TOP -->
+      <div class="ov top" id="ovTop">
+        <select id="camSel" class="sel" title="Fotocamera"></select>
+        <button id="flip"  class="btn btn-icon" title="Cambia camera">↺</button>
+        <button id="torch" class="btn btn-icon" title="Torcia">🔦</button>
+        <div class="sp"></div>
+        <button id="start" class="btn btn-primary">▶ Avvia</button>
+        <button id="stop"  class="btn">■ Stop</button>
+      </div>
+
+      <!-- Overlay BOTTOM -->
+      <div class="ov bottom" id="ovBottom">
+        <div class="badge">Totale: <span id="count">0</span></div>
+        <div class="chip">Ultimo: <span id="last">—</span></div>
+        <div class="sp"></div>
+        <button id="openDrawer" class="btn">Matricole</button>
+        <button id="copy"  class="btn">Copia</button>
+        <button id="clear" class="btn">Svuota</button>
+        <button id="send"  class="btn btn-primary">Invia</button>
+      </div>
+
+      <!-- Drawer Matricole -->
+      <div class="drawer" id="drawer">
+        <div class="head">
+          <div class="title">Matricole lette</div>
+          <div class="sp"></div>
+          <button id="closeDrawer" class="btn btn-icon" title="Chiudi">✕</button>
+        </div>
+        <div class="body">
+          <ul class="list" id="codeList"></ul>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast" id="toast">Pronto</div>
     </div>
   </div>
 
-  <!-- CARD LISTA -->
-  <div class="card">
-    <label>Raccolta (spazio-separati)</label>
-    <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
-    <div class="grid2" style="margin-top:8px">
-      <button id="btnCopy" class="btn btn-ghost">Copia</button>
-      <button id="btnClear" class="btn btn-ghost">Svuota</button>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <button id="btnSend" class="btn btn-primary">Invia al bot</button>
-    </div>
-  </div>
-
-</div>
-
-<!-- ZXing UMD (global: ZXing) -->
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
-<script>
-  /***** CONFIG: ponte server (solo per uso FUORI da Telegram) *****/
-  const FORWARD_URL   = "https://script.google.com/macros/s/AKfycbz3_eb26ihqnqG_RJ5yqb6Z_gQuaNN3_ETu3UCl1tkCbepRbQFarefhDH2jyypHbX0e/exec";
+  <!-- ZXing UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
+  <script>
+  /***** CONFIG *****/
+  const FORWARD_URL   = "https://script.google.com/macros/s/AKfycbz3_eb26ihqnqG_RJ5yqb6Z_gQuaNN3_ETu3UCl1tkCbepRbQFarefhDH2jyypHbX0e/exec"; // ponte HTTPS (fuori Telegram)
   const FORWARD_TOKEN = ""; // opzionale
+  const STORAGE_KEY   = "scanner16.cameraId";
+  const CODICE_LEN    = 16;
 
-  const STORAGE_KEY = "scanner16.cameraId";
+  /***** UTILS *****/
+  const qp=(k,def="")=>new URLSearchParams(location.search).get(k) ?? def;
+  const sid = qp("sid","");
+  const tg  = window.Telegram ? window.Telegram.WebApp : null; if (tg) tg.expand();
 
-  function qp(name, def=""){
-    const v = new URLSearchParams(location.search).get(name);
-    return v ?? def;
-  }
-  function getSidFromURL(){ return qp("sid",""); }
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+  const toast = $("#toast");
+  const showToast=(msg,ms=1500)=>{ toast.textContent=msg; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),ms); };
 
-  /***** CORE *****/
-  const CODICE_LEN = 16;
-  const reader = new ZXing.BrowserMultiFormatReader(
-    new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-      ZXing.BarcodeFormat.QR_CODE,
-      ZXing.BarcodeFormat.DATA_MATRIX,
-      ZXing.BarcodeFormat.CODE_128,
-      ZXing.BarcodeFormat.CODE_39,
-      ZXing.BarcodeFormat.EAN_13,
-      ZXing.BarcodeFormat.EAN_8,
-      ZXing.BarcodeFormat.ITF,
-      ZXing.BarcodeFormat.UPC_A
+  /***** MODEL *****/
+  let scanning=false, devices=[], currentIndex=0, currentTrack=null, torchOn=false;
+  const bag=[], dedup=new Set();
+  let lastShown="", lastUiTick=0;
+
+  // UI refs
+  const video=$("#preview");
+  const camSel=$("#camSel");
+  const btnStart=$("#start"), btnStop=$("#stop"), btnFlip=$("#flip"), btnTorch=$("#torch");
+  const btnCopy=$("#copy"), btnClear=$("#clear"), btnSend=$("#send");
+  const countEl=$("#count"), lastEl=$("#last");
+  const drawer=$("#drawer"), openDrawerBtn=$("#openDrawer"), closeDrawerBtn=$("#closeDrawer"), codeList=$("#codeList");
+
+  /***** ZXing READER *****/
+  const reader=new ZXing.BrowserMultiFormatReader(
+    new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS,[
+      ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.UPC_A
     ]]]),
     250
   );
 
-  let scanning = false, devices = [], currentIndex = 0, currentTrack = null, torchOn = false;
-  const bag = []; const dedup = new Set();
-  let lastShown = "", lastUiTick = 0;
-
-  const video     = document.getElementById('preview');
-  const cameraSel = document.getElementById('cameraSel');
-  const statusEl  = document.getElementById('status');
-  const lastEl    = document.getElementById('last');
-  const countEl   = document.getElementById('count');
-  const bagEl     = document.getElementById('bag');
-
-  const btnStart = document.getElementById('btnStart');
-  const btnStop  = document.getElementById('btnStop');
-  const btnFlip  = document.getElementById('btnFlip');
-  const btnTorch = document.getElementById('btnTorch');
-  const btnCopy  = document.getElementById('btnCopy');
-  const btnClear = document.getElementById('btnClear');
-  const btnSend  = document.getElementById('btnSend');
-  const tg = window.Telegram ? window.Telegram.WebApp : null;
-  if (tg) tg.expand();
-
+  /***** CORE HELPERS *****/
   function sanitizeAndSplit(raw){
     if(!raw) return [];
-    let s = String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
-    if (s.length === CODICE_LEN) return [s];
-    if (s.length > CODICE_LEN && s.length % CODICE_LEN === 0) {
-      const out = [];
-      for (let i=0;i<s.length;i+=CODICE_LEN) out.push(s.slice(i,i+CODICE_LEN));
-      return out;
+    let s=String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if (s.length===CODICE_LEN) return [s];
+    if (s.length>CODICE_LEN && s.length%CODICE_LEN===0){
+      const out=[]; for(let i=0;i<s.length;i+=CODICE_LEN) out.push(s.slice(i,i+CODICE_LEN)); return out;
     }
     return [];
   }
-  function renderBag(){ bagEl.value = bag.join(' '); countEl.textContent = String(bag.length); }
+  function renderCounters(){ countEl.textContent=String(bag.length); }
+  function renderLast(text){
+    const now=performance.now(); if (now-lastUiTick<120) return; lastUiTick=now;
+    requestAnimationFrame(()=>{ lastEl.textContent=text; });
+  }
+  function renderList(){
+    codeList.innerHTML="";
+    if (!bag.length){
+      const li=document.createElement("li"); li.textContent="Nessuna matricola letta."; li.style.color="var(--muted)"; li.style.padding="6px 2px";
+      codeList.appendChild(li); return;
+    }
+    bag.forEach((c,idx)=>{
+      const li=document.createElement("li"); li.className="row";
+      li.innerHTML=`
+        <span class="code">${String(idx+1).padStart(2,'0')}. ${c}</span>
+        <button class="x" data-code="${c}" title="Rimuovi">✕</button>
+      `;
+      codeList.appendChild(li);
+    });
+    // bind remove
+    $$(".x", codeList).forEach(btn=>{
+      btn.onclick=()=>{
+        const code=btn.getAttribute("data-code");
+        if (dedup.has(code)){
+          dedup.delete(code);
+          const i=bag.indexOf(code); if (i>=0) bag.splice(i,1);
+          renderCounters(); renderList();
+        }
+      };
+    });
+  }
   function addCodes(arr){
-    let added = 0;
+    let added=0;
     for(const c of arr){
       if (c.length!==CODICE_LEN) continue;
       if(!dedup.has(c)){ dedup.add(c); bag.push(c); added++; }
     }
-    if (added>0) renderBag();
+    if (added>0){ renderCounters(); renderLast(arr.join(" ")); if (drawer.classList.contains("open")) renderList(); }
     return added;
   }
-  function uiUpdateLast(text){
-    const now = performance.now();
-    if (now - lastUiTick < 120) return; // throttle
-    lastUiTick = now;
-    requestAnimationFrame(()=>{ lastEl.textContent = text; });
-  }
-
-  function savePreferredCameraId(id){
-    try{ localStorage.setItem(STORAGE_KEY, id || ""); }catch(_){}
-  }
-  function getPreferredCameraId(){
-    try{ return localStorage.getItem(STORAGE_KEY) || ""; }catch(_){ return ""; }
-  }
+  function savePreferredCameraId(id){ try{ localStorage.setItem(STORAGE_KEY, id||""); }catch(_){} }
+  function getPreferredCameraId(){ try{ return localStorage.getItem(STORAGE_KEY) || ""; }catch(_){ return ""; } }
 
   async function listCamerasAfterPermission(){
     try{
-      const all = await navigator.mediaDevices.enumerateDevices();
-      devices = all.filter(d => d.kind === 'videoinput');
-      cameraSel.innerHTML = '';
-      const preferredId = getPreferredCameraId();
+      const all=await navigator.mediaDevices.enumerateDevices();
+      devices=all.filter(d=>d.kind==="videoinput");
+      camSel.innerHTML="";
+      const preferredId=getPreferredCameraId();
 
       devices.forEach((d,i)=>{
-        const opt = document.createElement('option');
-        opt.value = d.deviceId || '';
-        const isBack = /back|rear|post/i.test(d.label||'');
-        opt.textContent = d.label || (isBack ? `Fotocamera posteriore ${i+1}` : `Fotocamera ${i+1}`);
-        cameraSel.appendChild(opt);
+        const opt=document.createElement("option");
+        const isBack=/back|rear|post/i.test(d.label||'');
+        opt.value=String(i);
+        opt.textContent=d.label || (isBack?`Fotocamera posteriore ${i+1}`:`Fotocamera ${i+1}`);
+        camSel.appendChild(opt);
       });
 
-      // scelta iniziale: preferita → back camera → prima
-      let idx = devices.findIndex(d => d.deviceId === preferredId);
-      if (idx < 0) {
-        const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
-        idx = backIdx >= 0 ? backIdx : 0;
+      let idx=devices.findIndex(d=>d.deviceId===preferredId);
+      if (idx<0){
+        const backIdx=devices.findIndex(d=>/back|rear|post/i.test(d.label||'')); idx=backIdx>=0?backIdx:0;
       }
-      currentIndex = Math.max(0, idx);
-      cameraSel.selectedIndex = currentIndex;
+      currentIndex=Math.max(0,idx);
+      camSel.selectedIndex=currentIndex;
     }catch(e){}
   }
 
   async function requestEnvironmentOnce(){
-    // Chiede una volta i permessi con facingMode: environment per popolare i label
     try{
-      const tmp = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1920 }, height: { ideal: 1080 }
-        },
-        audio: false
+      const tmp=await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080} }, audio:false
       });
-      // rilascia subito
-      tmp.getTracks().forEach(t => t.stop());
+      tmp.getTracks().forEach(t=>t.stop());
     }catch(_){}
   }
 
   async function start(devId){
     if (scanning) return;
-    scanning = true; btnStart.disabled = true; statusEl.textContent = 'Apertura camera…';
+    scanning=true; btnStart.disabled=true; showToast("Apertura camera…",900);
     try{
-      await reader.decodeFromVideoDevice(devId || null, video, (result) => {
-        if (result) {
-          const text = result.getText();
-          if (text && text !== lastShown) {
-            lastShown = text;
-            const chunks = sanitizeAndSplit(text);
-            const added = addCodes(chunks);
-            if (added>0) uiUpdateLast(chunks.join(' '));
+      await reader.decodeFromVideoDevice(devId||null, video, (result)=>{
+        if (result){
+          const text=result.getText();
+          if (text && text!==lastShown){
+            lastShown=text;
+            const chunks=sanitizeAndSplit(text);
+            addCodes(chunks);
           }
         }
       });
-      const stream = video.srcObject;
-      currentTrack = stream ? stream.getVideoTracks()[0] : null;
+      const stream=video.srcObject;
+      currentTrack=stream ? stream.getVideoTracks()[0] : null;
       if (!devices.length) await listCamerasAfterPermission();
-      // salva la camera in uso come preferita
-      const usingId = devices[currentIndex]?.deviceId || "";
+      const usingId=devices[currentIndex]?.deviceId || "";
       if (usingId) savePreferredCameraId(usingId);
-
-      statusEl.textContent = 'Scanning...';
+      showToast("Scanning…");
     }catch(e){
-      statusEl.textContent = 'Camera non disponibile o permesso negato';
-      scanning = false; btnStart.disabled = false;
+      scanning=false; btnStart.disabled=false; showToast("Permesso negato o camera non disponibile",1800);
       try{ reader.reset(); }catch(_){}
     }
   }
   function stop(){
     if (!scanning) return;
-    scanning = false; btnStart.disabled = false;
+    scanning=false; btnStart.disabled=false;
     try{ reader.reset(); }catch(_){}
     try{ if(currentTrack) currentTrack.stop(); }catch(_){}
-    currentTrack = null; torchOn = false;
-    statusEl.textContent = 'In attesa…';
+    currentTrack=null; torchOn=false;
+    showToast("In attesa…");
   }
 
   async function flipCamera(){
     if (!devices.length) return;
-    currentIndex = (currentIndex + 1) % devices.length;
-    cameraSel.selectedIndex = currentIndex;
-    const devId = devices[currentIndex]?.deviceId || null;
-    savePreferredCameraId(devId || "");
-    if (scanning) { stop(); await start(devId); }
+    currentIndex=(currentIndex+1)%devices.length;
+    camSel.selectedIndex=currentIndex;
+    const devId=devices[currentIndex]?.deviceId || null;
+    savePreferredCameraId(devId||"");
+    if (scanning){ stop(); await start(devId); }
   }
   async function toggleTorch(){
-    if (!currentTrack) { statusEl.textContent = 'Torcia non disponibile'; return; }
+    if (!currentTrack){ showToast("Torcia non disponibile"); return; }
     try{
-      await currentTrack.applyConstraints({ advanced: [{ torch: !torchOn }] });
-      torchOn = !torchOn;
-      statusEl.textContent = torchOn ? 'Torcia ON' : 'Torcia OFF';
+      await currentTrack.applyConstraints({ advanced:[{ torch:!torchOn }] });
+      torchOn=!torchOn; showToast(torchOn?"Torcia ON":"Torcia OFF",800);
     }catch(e){
-      statusEl.textContent = 'Torcia non supportata';
+      showToast("Torcia non supportata",1200);
     }
   }
 
-  // Handlers
-  btnStart.onclick = ()=>{ const devId = devices[currentIndex]?.deviceId || getPreferredCameraId() || null; start(devId); };
+  /***** ACTIONS *****/
+  btnStart.onclick = ()=>{ const devId=devices[currentIndex]?.deviceId || getPreferredCameraId() || null; start(devId); };
   btnStop.onclick  = stop;
   btnFlip.onclick  = flipCamera;
   btnTorch.onclick = toggleTorch;
-  cameraSel.onchange = async ()=>{
+
+  camSel.onchange = ()=>{
     if (!devices.length) return;
-    currentIndex = cameraSel.selectedIndex||0;
-    const devId = devices[currentIndex]?.deviceId || "";
+    currentIndex=camSel.selectedIndex||0;
+    const devId=devices[currentIndex]?.deviceId || "";
     savePreferredCameraId(devId);
     if (scanning){ stop(); start(devId); }
   };
 
-  btnCopy.onclick = async ()=>{ try{ await navigator.clipboard.writeText(bag.join(' ')); statusEl.textContent = `Copiati ${bag.length} codici`; }catch(e){ statusEl.textContent = 'Clipboard non disponibile'; } };
-  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderBag(); lastShown=""; lastEl.textContent='—'; statusEl.textContent='In attesa…'; };
+  btnCopy.onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(bag.join(' ')); showToast(`Copiati ${bag.length} codici`); }
+    catch(e){ showToast("Clipboard non disponibile"); }
+  };
+  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderCounters(); renderList(); lastShown=""; lastEl.textContent='—'; showToast("Svuotato"); };
 
   btnSend.onclick = async ()=>{
-    if (!bag.length) { statusEl.textContent = "Nessun codice da inviare"; return; }
+    if (!bag.length){ showToast("Nessun codice da inviare"); return; }
 
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-    if (tg) { tg.sendData(JSON.stringify({ codes: bag })); tg.close(); return; }
-
-    const sid = getSidFromURL();
-    if (!sid) { statusEl.textContent = "Link senza SID: apri dal bot con “Apri nel browser”"; return; }
+    if (tg){ tg.sendData(JSON.stringify({ codes: bag })); tg.close(); return; }
+    if (!sid){ showToast("Link senza SID (usa Apri nel browser dal bot)"); return; }
 
     try{
-      const res = await fetch(FORWARD_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ sid, codes: bag, origin: location.origin, token: FORWARD_TOKEN })
+      const res=await fetch(FORWARD_URL,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ sid, codes:bag, origin:location.origin, token:FORWARD_TOKEN })
       });
-      const text = await res.text().catch(()=>"(no body)");
-      if (res.ok) {
-        statusEl.textContent = `Inviati ${bag.length} codici`;
-      } else {
-        statusEl.textContent = `Errore invio ${res.status}: ${text}`;
-      }
+      const text=await res.text().catch(()=>"(no body)");
+      if (res.ok){ showToast(`Inviati ${bag.length}`); }
+      else{ showToast(`Errore ${res.status}`); console.warn(text); }
     }catch(e){
-      statusEl.textContent = `Errore rete: ${e?.message || e}`;
+      showToast(`Errore rete`); console.error(e);
     }
   };
 
-  // Boot: chiedi permessi una volta per avere i label, poi popola select, poi autostart se richiesto o se esiste preferita
+  // Drawer
+  const toggleDrawer=(open)=> drawer.classList.toggle("open", open);
+  openDrawerBtn.onclick = ()=>{ renderList(); toggleDrawer(true); };
+  closeDrawerBtn.onclick= ()=> toggleDrawer(false);
+
+  // Boot
   (async function boot(){
-    const autostart = qp("autostart","0") === "1";
     try{
       await requestEnvironmentOnce();
     }finally{
       await listCamerasAfterPermission();
-      const preferredId = getPreferredCameraId();
-      let idx = preferredId ? devices.findIndex(d => d.deviceId === preferredId) : -1;
-      if (idx >= 0) { currentIndex = idx; cameraSel.selectedIndex = idx; }
-      if (autostart || preferredId) {
-        const devId = devices[currentIndex]?.deviceId || preferredId || null;
+      const preferredId=getPreferredCameraId();
+      let idx=preferredId ? devices.findIndex(d=>d.deviceId===preferredId) : -1;
+      if (idx>=0){ currentIndex=idx; camSel.selectedIndex=idx; }
+      const autostart = qp("autostart","0")==="1" || !!preferredId;
+      if (autostart){
+        const devId=devices[currentIndex]?.deviceId || preferredId || null;
         if (devId) start(devId);
+      } else {
+        showToast("Pronto");
       }
     }
   })();
-</script>
+  </script>
 </body>
 </html>
