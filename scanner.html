@@ -13,16 +13,14 @@
     --border:#e5e7eb;
     --blue:#1e3a8a;       /* primary dark */
     --blue-2:#3b82f6;     /* primary */
-    --accent:#2563eb;     /* CTA */
     --panel:#ffffff;
-    --glass:rgba(255,255,255,.62); /* più trasparente */
+    --glass:rgba(255,255,255,.58); /* overlay più trasparente */
     --shadow:0 12px 32px rgba(2,6,23,.18);
     --chip:#eef2ff;
-    --footer-h:64px;      /* altezza footer bar */
+    --footer-h:66px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  body{ padding-bottom: calc(var(--footer-h) + 16px); } /* spazio per la barra bassa */
 
   .container{max-width:1060px;margin:0 auto;padding:8px 8px 0}
 
@@ -49,7 +47,7 @@
     position:absolute; left:50%; transform:translateX(-50%);
     z-index:9999;
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    background:var(--glass); backdrop-filter:blur(10px) saturate(1.1);
+    background:var(--glass); backdrop-filter:blur(10px) saturate(1.05);
     border:1px solid rgba(229,231,235,.7);
     border-radius:16px; padding:8px 10px;
     box-shadow:var(--shadow);
@@ -60,19 +58,24 @@
 
   .ov .sp{flex:1}
   .sel{
-    min-width:240px; height:44px; border:1px solid var(--border);
+    min-width:240px; height:46px; border:1px solid var(--border);
     border-radius:12px; padding:0 12px; background:#fff; color:var(--ink);
     font-size:1rem;
   }
   .btn{
-    height:44px; padding:0 14px; border-radius:14px; border:1px solid var(--border);
+    height:46px; padding:0 14px; border-radius:14px; border:1px solid var(--border);
     background:#fff; color:var(--ink); font-weight:700; cursor:pointer;
   }
   .btn:hover{ background:#f8fafc }
   .btn:active{ transform:translateY(1px) }
+
+  /* Icon buttons: più grandi e icona piena */
   .btn-icon{
-    width:44px; height:44px; padding:0; border-radius:999px; display:flex; place-content:center;
+    width:54px; height:54px; padding:0; border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px; line-height:1;    /* icona grande */
   }
+
   .btn-primary{
     background:linear-gradient(135deg,var(--blue-2),var(--blue));
     color:#fff; border-color:transparent;
@@ -96,7 +99,7 @@
     width:min(380px, calc(100% - 24px));
     max-height:70vh;
     display:flex; flex-direction:column; gap:8px;
-    background:var(--glass); backdrop-filter:blur(10px) saturate(1.1);
+    background:var(--glass); backdrop-filter:blur(10px) saturate(1.05);
     border:1px solid rgba(229,231,235,.7); border-radius:16px;
     box-shadow:var(--shadow);
     overflow:hidden; opacity:0; transform:translateY(8px); pointer-events:none;
@@ -119,27 +122,31 @@
   .drawer .x{ border:none; background:#fee2e2; color:#991b1b; border-radius:10px; padding:6px 8px; cursor:pointer; font-weight:700 }
   .drawer .x:hover{ filter:brightness(.96) }
 
-  /* ===== Toast stato (sopra il video) ===== */
+  /* ===== Toast (sopra il video) ===== */
   .toast{
     position:absolute; right:12px; top:12px; z-index:10000;
     background:#0ea5e9; color:white; border-radius:12px; padding:8px 12px; box-shadow:var(--shadow); font-weight:700; display:none;
   }
   .toast.show{ display:block }
 
-  /* ===== Footer toolbar (fuori dalla camera) ===== */
+  /* ===== Toolbar bassa: subito sotto la camera =====
+     - In flow, così non resta "fuori schermo" su mobile
+     - Sticky verso il fondo viewport usando 100svh (mobile friendly) */
+  .footer-wrap{ max-width:1060px; margin:10px auto 12px; padding:0 8px; }
   .footerbar{
-    position:fixed; left:50%; transform:translateX(-50%);
-    bottom:0; z-index:9000;  /* sotto al toast/drawer, sopra il resto */
+    position: sticky;
+    top: calc(100svh - var(--footer-h) - 10px);
+    z-index: 5000;
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    width:100%; max-width:1060px; padding:10px 8px;
+    width:100%; padding:10px 12px; height:var(--footer-h);
     background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.98));
-    border-top:1px solid rgba(229,231,235,.9);
-    box-shadow:0 -8px 20px rgba(2,6,23,.06);
+    border:1px solid rgba(229,231,235,.9);
+    border-radius:16px;
+    box-shadow:0 8px 20px rgba(2,6,23,.08);
     backdrop-filter: blur(8px);
-    height:var(--footer-h);
   }
   .footerbar .sp{ flex:1 }
-  .footerbar .btn{ height:44px; padding:0 14px; border-radius:14px; border:1px solid var(--border); background:#fff; font-weight:700 }
+  .footerbar .btn{ height:46px; padding:0 14px; border-radius:14px; border:1px solid var(--border); background:#fff; font-weight:700 }
   .footerbar .btn:hover{ background:#f8fafc }
   .footerbar .btn-primary{
     background:linear-gradient(135deg,var(--blue-2),var(--blue));
@@ -151,7 +158,7 @@
   @media (max-width:760px){
     .sel{min-width:unset; width:100%}
     video#preview{height:78vh; min-height:360px}
-    .footerbar{ gap:8px; padding:8px }
+    .btn-icon{ width:50px; height:50px; font-size:26px }
   }
 </style>
 </head>
@@ -160,7 +167,7 @@
     <div class="video-wrap">
       <video id="preview" playsinline muted></video>
 
-      <!-- Overlay TOP (trasparente) -->
+      <!-- Overlay TOP -->
       <div class="ov top" id="ovTop">
         <select id="camSel" class="sel" title="Fotocamera"></select>
         <button id="flip"  class="btn btn-icon" title="Cambia camera">↺</button>
@@ -182,20 +189,22 @@
         </div>
       </div>
 
-      <!-- Toast (in alto a destra nel video) -->
+      <!-- Toast -->
       <div class="toast" id="toast">Pronto</div>
     </div>
   </div>
 
-  <!-- Footer toolbar (FUORI dalla camera) -->
-  <div class="footerbar" id="footerBar">
-    <div class="chip">Ultimo: <span id="last">—</span></div>
-    <div class="badge">Totale: <span id="count">0</span></div>
-    <div class="sp"></div>
-    <button id="openDrawer" class="btn">Matricole</button>
-    <button id="copy"  class="btn">Copia</button>
-    <button id="clear" class="btn">Svuota</button>
-    <button id="send"  class="btn btn-primary">Invia</button>
+  <!-- Toolbar bassa (SUBITO sotto la camera) -->
+  <div class="footer-wrap">
+    <div class="footerbar" id="footerBar">
+      <div class="chip">Ultimo: <span id="last">—</span></div>
+      <div class="badge">Totale: <span id="count">0</span></div>
+      <div class="sp"></div>
+      <button id="openDrawer" class="btn">Matricole</button>
+      <button id="copy"  class="btn">Copia</button>
+      <button id="clear" class="btn">Svuota</button>
+      <button id="send"  class="btn btn-primary">Invia</button>
+    </div>
   </div>
 
   <!-- ZXing UMD -->
@@ -399,7 +408,6 @@
 
   btnSend.onclick = async ()=>{
     if (!bag.length){ showToast("Nessun codice da inviare"); return; }
-
     if (tg){ tg.sendData(JSON.stringify({ codes: bag })); tg.close(); return; }
     if (!sid){ showToast("Link senza SID (usa Apri nel browser dal bot)"); return; }
 
@@ -423,9 +431,8 @@
 
   // Boot
   (async function boot(){
-    try{
-      await requestEnvironmentOnce();
-    }finally{
+    try{ await requestEnvironmentOnce(); }
+    finally{
       await listCamerasAfterPermission();
       const preferredId=getPreferredCameraId();
       let idx=preferredId ? devices.findIndex(d=>d.deviceId===preferredId) : -1;
