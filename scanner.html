@@ -116,7 +116,7 @@
   /******** CONFIG ********/
   // Passa ?bridge=<URL del worker> e opzionale ?btok=<token> per header X-Bridge-Token
   const qp = (k, def="") => new URLSearchParams(location.search).get(k) ?? def;
-  const FORWARD_URL   = qp("bridge", "https://scanner-bridge2.pages.dev/api/forward");
+  const FORWARD_URL   = qp("bridge", "https://scanner-bridge2.pages.dev");
   const FORWARD_TOKEN = qp("btok", "");
   const STORAGE_KEY   = "scanner16.cameraId";
   const CODICE_LEN    = 16;
