@@ -5,24 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Scanner 16 – OpsHub</title>
 <style>
-  /* ====== Tema OpsHub minimal ====== */
+  /* ====== Tema OpsHub ====== */
   :root{
     --bg:#ffffff;
     --ink:#0f172a;
     --muted:#64748b;
     --border:#e5e7eb;
-    --blue:#1e3a8a;       /* OpsHub primary dark */
-    --blue-2:#3b82f6;     /* OpsHub primary */
+    --blue:#1e3a8a;       /* primary dark */
+    --blue-2:#3b82f6;     /* primary */
     --accent:#2563eb;     /* CTA */
-    --accent-2:#1e40af;   /* CTA hover */
     --panel:#ffffff;
-    --glass:rgba(255,255,255,.92);
+    --glass:rgba(255,255,255,.62); /* più trasparente */
     --shadow:0 12px 32px rgba(2,6,23,.18);
     --chip:#eef2ff;
+    --footer-h:64px;      /* altezza footer bar */
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  .container{max-width:1060px;margin:0 auto;padding:8px}
+  body{ padding-bottom: calc(var(--footer-h) + 16px); } /* spazio per la barra bassa */
+
+  .container{max-width:1060px;margin:0 auto;padding:8px 8px 0}
+
   .video-wrap{
     position:relative;
     border:1px solid var(--border);
@@ -41,35 +44,34 @@
     background:#000;
   }
 
-  /* ====== Overlay common ====== */
+  /* ===== Overlay TOP (più trasparente) ===== */
   .ov{
     position:absolute; left:50%; transform:translateX(-50%);
     z-index:9999;
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    background:var(--glass); backdrop-filter:blur(10px);
-    border:1px solid var(--border);
-    border-radius:16px; padding:10px 12px;
+    background:var(--glass); backdrop-filter:blur(10px) saturate(1.1);
+    border:1px solid rgba(229,231,235,.7);
+    border-radius:16px; padding:8px 10px;
     box-shadow:var(--shadow);
     width:calc(100% - 16px);
     max-width:980px;
   }
   .ov.top{ top:10px }
-  .ov.bottom{ bottom:calc(10px + env(safe-area-inset-bottom,0px)) }
 
   .ov .sp{flex:1}
   .sel{
-    min-width:240px; height:46px; border:1px solid var(--border);
+    min-width:240px; height:44px; border:1px solid var(--border);
     border-radius:12px; padding:0 12px; background:#fff; color:var(--ink);
     font-size:1rem;
   }
   .btn{
-    height:46px; padding:0 16px; border-radius:14px; border:1px solid var(--border);
+    height:44px; padding:0 14px; border-radius:14px; border:1px solid var(--border);
     background:#fff; color:var(--ink); font-weight:700; cursor:pointer;
   }
   .btn:hover{ background:#f8fafc }
   .btn:active{ transform:translateY(1px) }
   .btn-icon{
-    width:46px; height:46px; padding:0; border-radius:999px; display:flex; place-content:center;
+    width:44px; height:44px; padding:0; border-radius:999px; display:flex; place-content:center;
   }
   .btn-primary{
     background:linear-gradient(135deg,var(--blue-2),var(--blue));
@@ -87,22 +89,22 @@
     background:var(--chip); font-family:ui-monospace,Consolas,monospace; font-size:.9rem;
   }
 
-  /* ====== Drawer matricole (overlay laterale) ====== */
+  /* ===== Drawer matricole (dentro la camera) ===== */
   .drawer{
-    position:absolute; right:12px; bottom:72px; /* sopra la bottom bar */
-    z-index:9998;
+    position:absolute; right:12px; bottom:12px;
+    z-index:9998; /* sopra il video */
     width:min(380px, calc(100% - 24px));
-    max-height:60vh;
+    max-height:70vh;
     display:flex; flex-direction:column; gap:8px;
-    background:var(--glass); backdrop-filter:blur(10px);
-    border:1px solid var(--border); border-radius:16px;
+    background:var(--glass); backdrop-filter:blur(10px) saturate(1.1);
+    border:1px solid rgba(229,231,235,.7); border-radius:16px;
     box-shadow:var(--shadow);
     overflow:hidden; opacity:0; transform:translateY(8px); pointer-events:none;
     transition:opacity .16s ease, transform .16s ease;
   }
   .drawer.open{ opacity:1; transform:translateY(0); pointer-events:auto }
   .drawer .head{
-    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    display:flex; align-items:center; gap:10px; padding:8px 10px;
     background:linear-gradient(135deg,#f8fafc,#fff);
     border-bottom:1px solid var(--border);
   }
@@ -117,16 +119,39 @@
   .drawer .x{ border:none; background:#fee2e2; color:#991b1b; border-radius:10px; padding:6px 8px; cursor:pointer; font-weight:700 }
   .drawer .x:hover{ filter:brightness(.96) }
 
-  /* ====== Toast stato (in alto a destra) ====== */
+  /* ===== Toast stato (sopra il video) ===== */
   .toast{
     position:absolute; right:12px; top:12px; z-index:10000;
     background:#0ea5e9; color:white; border-radius:12px; padding:8px 12px; box-shadow:var(--shadow); font-weight:700; display:none;
   }
   .toast.show{ display:block }
 
+  /* ===== Footer toolbar (fuori dalla camera) ===== */
+  .footerbar{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:0; z-index:9000;  /* sotto al toast/drawer, sopra il resto */
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    width:100%; max-width:1060px; padding:10px 8px;
+    background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.98));
+    border-top:1px solid rgba(229,231,235,.9);
+    box-shadow:0 -8px 20px rgba(2,6,23,.06);
+    backdrop-filter: blur(8px);
+    height:var(--footer-h);
+  }
+  .footerbar .sp{ flex:1 }
+  .footerbar .btn{ height:44px; padding:0 14px; border-radius:14px; border:1px solid var(--border); background:#fff; font-weight:700 }
+  .footerbar .btn:hover{ background:#f8fafc }
+  .footerbar .btn-primary{
+    background:linear-gradient(135deg,var(--blue-2),var(--blue));
+    color:#fff; border-color:transparent;
+    box-shadow:0 8px 18px rgba(30,58,138,.28);
+  }
+  .footerbar .chip{ background:var(--chip); border:1px solid var(--border) }
+
   @media (max-width:760px){
     .sel{min-width:unset; width:100%}
     video#preview{height:78vh; min-height:360px}
+    .footerbar{ gap:8px; padding:8px }
   }
 </style>
 </head>
@@ -135,7 +160,7 @@
     <div class="video-wrap">
       <video id="preview" playsinline muted></video>
 
-      <!-- Overlay TOP -->
+      <!-- Overlay TOP (trasparente) -->
       <div class="ov top" id="ovTop">
         <select id="camSel" class="sel" title="Fotocamera"></select>
         <button id="flip"  class="btn btn-icon" title="Cambia camera">↺</button>
@@ -145,18 +170,7 @@
         <button id="stop"  class="btn">■ Stop</button>
       </div>
 
-      <!-- Overlay BOTTOM -->
-      <div class="ov bottom" id="ovBottom">
-        <div class="badge">Totale: <span id="count">0</span></div>
-        <div class="chip">Ultimo: <span id="last">—</span></div>
-        <div class="sp"></div>
-        <button id="openDrawer" class="btn">Matricole</button>
-        <button id="copy"  class="btn">Copia</button>
-        <button id="clear" class="btn">Svuota</button>
-        <button id="send"  class="btn btn-primary">Invia</button>
-      </div>
-
-      <!-- Drawer Matricole -->
+      <!-- Drawer Matricole (dentro la camera) -->
       <div class="drawer" id="drawer">
         <div class="head">
           <div class="title">Matricole lette</div>
@@ -168,9 +182,20 @@
         </div>
       </div>
 
-      <!-- Toast -->
+      <!-- Toast (in alto a destra nel video) -->
       <div class="toast" id="toast">Pronto</div>
     </div>
+  </div>
+
+  <!-- Footer toolbar (FUORI dalla camera) -->
+  <div class="footerbar" id="footerBar">
+    <div class="chip">Ultimo: <span id="last">—</span></div>
+    <div class="badge">Totale: <span id="count">0</span></div>
+    <div class="sp"></div>
+    <button id="openDrawer" class="btn">Matricole</button>
+    <button id="copy"  class="btn">Copia</button>
+    <button id="clear" class="btn">Svuota</button>
+    <button id="send"  class="btn btn-primary">Invia</button>
   </div>
 
   <!-- ZXing UMD -->
@@ -190,7 +215,7 @@
   const $  = (s,r=document)=>r.querySelector(s);
   const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
   const toast = $("#toast");
-  const showToast=(msg,ms=1500)=>{ toast.textContent=msg; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),ms); };
+  const showToast=(msg,ms=1400)=>{ toast.textContent=msg; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),ms); };
 
   /***** MODEL *****/
   let scanning=false, devices=[], currentIndex=0, currentTrack=null, torchOn=false;
