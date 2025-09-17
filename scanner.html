@@ -12,36 +12,43 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-  .container{max-width:920px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:18px}
-  .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px}
-  .header{display:flex;align-items:center;gap:12px}
-  .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:22px}
-  h1{font-size:1.35rem;margin:0}
-  .sub{color:var(--muted);font-size:.95rem;margin-top:2px}
+  .container{max-width:920px;margin:0 auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:14px}
+  .header{display:flex;align-items:center;gap:10px}
+  .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#ffffff);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:18px}
+  h1{font-size:1.2rem;margin:0}
+  .sub{color:var(--muted);font-size:.9rem;margin-top:2px}
 
-  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .toolbar-left{display:flex;gap:10px;align-items:center;flex:1}
-  .toolbar-right{display:flex;gap:10px;align-items:center}
-  label{font-size:.9rem;color:var(--muted)}
-  select,button,textarea{padding:12px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
-  select{min-width:240px;max-width:100%}
+  /* Toolbar minimal */
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .toolbar-left{display:flex;gap:8px;align-items:center;flex:1}
+  .toolbar-right{display:flex;gap:8px;align-items:center}
+  label{font-size:.85rem;color:var(--muted)}
+  select,button,textarea{padding:11px;border-radius:12px;border:1px solid var(--border);font-size:1rem;background:#fff;color:var(--ink)}
+  select{min-width:220px;max-width:100%}
   .btn{cursor:pointer;font-weight:700}
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn-primary:hover{background:var(--accent-2)}
   .btn-ghost{background:#f8fafc}
-  .btn-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+  .btn-icon{width:46px;height:46px;display:flex;align-items:center;justify-content:center}
 
-  .video-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden}
-  video{width:100%;height:64vh;min-height:360px;max-height:76vh;background:#000;object-fit:cover;display:block}
+  /* Video grande, pochi fronzoli */
+  .video-wrap{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  video{width:100%;height:80vh;min-height:420px;max-height:85vh;background:#000;object-fit:cover;display:block}
 
-  .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
   .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:.85rem;background:#f8fafc}
   .mono{font-family:ui-monospace,Consolas,monospace}
 
   textarea{min-height:110px;resize:vertical;width:100%}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:760px){ .grid2{grid-template-columns:1fr} .toolbar{flex-direction:column;align-items:stretch} .toolbar-right{width:100%;justify-content:flex-start} }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (max-width:760px){
+    .grid2{grid-template-columns:1fr}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-right{width:100%;justify-content:flex-start}
+    video{height:78vh;min-height:360px}
+  }
 </style>
 </head>
 <body>
@@ -60,12 +67,12 @@
     <div class="toolbar">
       <div class="toolbar-left">
         <div>
-          <label for="cameraSel">Fotocamera</label><br/>
+          <label for="cameraSel">Fotocamera (memorizzata)</label><br/>
           <select id="cameraSel" aria-label="Seleziona fotocamera"></select>
         </div>
       </div>
       <div class="toolbar-right">
-        <button id="btnFlip" class="btn btn-ghost btn-icon" title="Cambia camera">↺</button>
+        <button id="btnFlip"  class="btn btn-ghost btn-icon" title="Cambia camera">↺</button>
         <button id="btnTorch" class="btn btn-ghost btn-icon" title="Torcia">🔦</button>
         <button id="btnStart" class="btn btn-primary">Avvia</button>
         <button id="btnStop"  class="btn btn-ghost">Stop</button>
@@ -87,11 +94,11 @@
   <div class="card">
     <label>Raccolta (spazio-separati)</label>
     <textarea id="bag" class="mono" placeholder="VUOTO"></textarea>
-    <div class="grid2" style="margin-top:10px">
+    <div class="grid2" style="margin-top:8px">
       <button id="btnCopy" class="btn btn-ghost">Copia</button>
       <button id="btnClear" class="btn btn-ghost">Svuota</button>
     </div>
-    <div class="row" style="margin-top:10px">
+    <div class="row" style="margin-top:8px">
       <button id="btnSend" class="btn btn-primary">Invia al bot</button>
     </div>
   </div>
@@ -102,14 +109,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
   /***** CONFIG: ponte server (solo per uso FUORI da Telegram) *****/
-  // NON è l'URL della pagina HTML! È l'endpoint che inoltra al Bot API.
-  const FORWARD_URL   = "https://scanner-bridge.pages.dev/scanner/push"; // ← metti il tuo ponte HTTPS
-  const FORWARD_TOKEN = "";        // ← opzionale ("" se non usi auth)
+  const FORWARD_URL   = "https://script.google.com/macros/s/AKfycbz3_eb26ihqnqG_RJ5yqb6Z_gQuaNN3_ETu3UCl1tkCbepRbQFarefhDH2jyypHbX0e/exec";
+  const FORWARD_TOKEN = ""; // opzionale
 
-  function getSidFromURL(){
-    const v = new URLSearchParams(location.search).get("sid");
-    return v ? String(v) : "";
+  const STORAGE_KEY = "scanner16.cameraId";
+
+  function qp(name, def=""){
+    const v = new URLSearchParams(location.search).get(name);
+    return v ?? def;
   }
+  function getSidFromURL(){ return qp("sid",""); }
 
   /***** CORE *****/
   const CODICE_LEN = 16;
@@ -131,12 +140,12 @@
   const bag = []; const dedup = new Set();
   let lastShown = "", lastUiTick = 0;
 
-  const video = document.getElementById('preview');
+  const video     = document.getElementById('preview');
   const cameraSel = document.getElementById('cameraSel');
-  const statusEl = document.getElementById('status');
-  const lastEl = document.getElementById('last');
-  const countEl = document.getElementById('count');
-  const bagEl = document.getElementById('bag');
+  const statusEl  = document.getElementById('status');
+  const lastEl    = document.getElementById('last');
+  const countEl   = document.getElementById('count');
+  const bagEl     = document.getElementById('bag');
 
   const btnStart = document.getElementById('btnStart');
   const btnStop  = document.getElementById('btnStop');
@@ -176,28 +185,59 @@
     requestAnimationFrame(()=>{ lastEl.textContent = text; });
   }
 
+  function savePreferredCameraId(id){
+    try{ localStorage.setItem(STORAGE_KEY, id || ""); }catch(_){}
+  }
+  function getPreferredCameraId(){
+    try{ return localStorage.getItem(STORAGE_KEY) || ""; }catch(_){ return ""; }
+  }
+
   async function listCamerasAfterPermission(){
     try{
       const all = await navigator.mediaDevices.enumerateDevices();
       devices = all.filter(d => d.kind === 'videoinput');
       cameraSel.innerHTML = '';
+      const preferredId = getPreferredCameraId();
+
       devices.forEach((d,i)=>{
         const opt = document.createElement('option');
         opt.value = d.deviceId || '';
-        opt.textContent = d.label || `Camera ${i+1}`;
+        const isBack = /back|rear|post/i.test(d.label||'');
+        opt.textContent = d.label || (isBack ? `Fotocamera posteriore ${i+1}` : `Fotocamera ${i+1}`);
         cameraSel.appendChild(opt);
       });
-      const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
-      currentIndex = backIdx>=0 ? backIdx : 0;
+
+      // scelta iniziale: preferita → back camera → prima
+      let idx = devices.findIndex(d => d.deviceId === preferredId);
+      if (idx < 0) {
+        const backIdx = devices.findIndex(d => /back|rear|post/i.test(d.label||''));
+        idx = backIdx >= 0 ? backIdx : 0;
+      }
+      currentIndex = Math.max(0, idx);
       cameraSel.selectedIndex = currentIndex;
     }catch(e){}
+  }
+
+  async function requestEnvironmentOnce(){
+    // Chiede una volta i permessi con facingMode: environment per popolare i label
+    try{
+      const tmp = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 }, height: { ideal: 1080 }
+        },
+        audio: false
+      });
+      // rilascia subito
+      tmp.getTracks().forEach(t => t.stop());
+    }catch(_){}
   }
 
   async function start(devId){
     if (scanning) return;
     scanning = true; btnStart.disabled = true; statusEl.textContent = 'Apertura camera…';
     try{
-      await reader.decodeFromVideoDevice(devId || null, video, (result, err) => {
+      await reader.decodeFromVideoDevice(devId || null, video, (result) => {
         if (result) {
           const text = result.getText();
           if (text && text !== lastShown) {
@@ -211,6 +251,10 @@
       const stream = video.srcObject;
       currentTrack = stream ? stream.getVideoTracks()[0] : null;
       if (!devices.length) await listCamerasAfterPermission();
+      // salva la camera in uso come preferita
+      const usingId = devices[currentIndex]?.deviceId || "";
+      if (usingId) savePreferredCameraId(usingId);
+
       statusEl.textContent = 'Scanning...';
     }catch(e){
       statusEl.textContent = 'Camera non disponibile o permesso negato';
@@ -231,7 +275,9 @@
     if (!devices.length) return;
     currentIndex = (currentIndex + 1) % devices.length;
     cameraSel.selectedIndex = currentIndex;
-    if (scanning) { stop(); await start(devices[currentIndex]?.deviceId); }
+    const devId = devices[currentIndex]?.deviceId || null;
+    savePreferredCameraId(devId || "");
+    if (scanning) { stop(); await start(devId); }
   }
   async function toggleTorch(){
     if (!currentTrack) { statusEl.textContent = 'Torcia non disponibile'; return; }
@@ -244,38 +290,64 @@
     }
   }
 
-  btnStart.onclick = ()=>{ const devId = devices[currentIndex]?.deviceId; start(devId); };
+  // Handlers
+  btnStart.onclick = ()=>{ const devId = devices[currentIndex]?.deviceId || getPreferredCameraId() || null; start(devId); };
   btnStop.onclick  = stop;
   btnFlip.onclick  = flipCamera;
   btnTorch.onclick = toggleTorch;
-  cameraSel.onchange = ()=>{ if (!devices.length) return; currentIndex = cameraSel.selectedIndex||0; if (scanning){ stop(); start(devices[currentIndex]?.deviceId); } };
+  cameraSel.onchange = async ()=>{
+    if (!devices.length) return;
+    currentIndex = cameraSel.selectedIndex||0;
+    const devId = devices[currentIndex]?.deviceId || "";
+    savePreferredCameraId(devId);
+    if (scanning){ stop(); start(devId); }
+  };
 
   btnCopy.onclick = async ()=>{ try{ await navigator.clipboard.writeText(bag.join(' ')); statusEl.textContent = `Copiati ${bag.length} codici`; }catch(e){ statusEl.textContent = 'Clipboard non disponibile'; } };
   btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderBag(); lastShown=""; lastEl.textContent='—'; statusEl.textContent='In attesa…'; };
 
   btnSend.onclick = async ()=>{
-    if (bag.length === 0) { statusEl.textContent = "Nessun codice da inviare"; return; }
+    if (!bag.length) { statusEl.textContent = "Nessun codice da inviare"; return; }
 
-    if (tg) {
-      tg.sendData(JSON.stringify({ codes: bag }));
-      tg.close();
-      return;
-    }
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg) { tg.sendData(JSON.stringify({ codes: bag })); tg.close(); return; }
 
     const sid = getSidFromURL();
-    if (!sid) { statusEl.textContent = "Link non valido: manca il sid (riapri dal bot)"; return; }
+    if (!sid) { statusEl.textContent = "Link senza SID: apri dal bot con “Apri nel browser”"; return; }
 
     try{
       const res = await fetch(FORWARD_URL, {
         method:'POST',
-        headers:{'Content-Type':'application/json', ...(FORWARD_TOKEN?{'Authorization':FORWARD_TOKEN}:{})},
-        body: JSON.stringify({ sid, codes: bag })
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ sid, codes: bag, origin: location.origin, token: FORWARD_TOKEN })
       });
-      statusEl.textContent = res.ok ? `Inviati ${bag.length} codici` : `Errore invio: ${res.status}`;
+      const text = await res.text().catch(()=>"(no body)");
+      if (res.ok) {
+        statusEl.textContent = `Inviati ${bag.length} codici`;
+      } else {
+        statusEl.textContent = `Errore invio ${res.status}: ${text}`;
+      }
     }catch(e){
-      statusEl.textContent = "Errore rete durante l'invio";
+      statusEl.textContent = `Errore rete: ${e?.message || e}`;
     }
   };
+
+  // Boot: chiedi permessi una volta per avere i label, poi popola select, poi autostart se richiesto o se esiste preferita
+  (async function boot(){
+    const autostart = qp("autostart","0") === "1";
+    try{
+      await requestEnvironmentOnce();
+    }finally{
+      await listCamerasAfterPermission();
+      const preferredId = getPreferredCameraId();
+      let idx = preferredId ? devices.findIndex(d => d.deviceId === preferredId) : -1;
+      if (idx >= 0) { currentIndex = idx; cameraSel.selectedIndex = idx; }
+      if (autostart || preferredId) {
+        const devId = devices[currentIndex]?.deviceId || preferredId || null;
+        if (devId) start(devId);
+      }
+    }
+  })();
 </script>
 </body>
 </html>
