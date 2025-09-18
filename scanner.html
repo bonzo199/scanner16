@@ -48,6 +48,22 @@
   .toast{position:absolute;right:12px;top:12px;z-index:10060;background:#0ea5e9;color:white;border-radius:12px;padding:8px 12px;box-shadow:var(--shadow);font-weight:700;display:none}
   .toast.show{display:block}
 
+  /* Popup ultima matricola (sopra ai pulsanti, sotto la camera) */
+  .lastpop{
+    position:fixed; left:50%; transform:translateX(-50%) translateY(10px);
+    bottom: calc(env(safe-area-inset-bottom,0px) + var(--footer-h) + 10px);
+    z-index:9050;
+    background:rgba(255,255,255,.9); backdrop-filter:blur(8px);
+    border:1px solid rgba(229,231,235,.9); border-radius:14px; box-shadow:var(--shadow);
+    padding:8px 12px; max-width:92%;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    font-size:1rem;
+  }
+  .lastpop .lp-code{font-family:ui-monospace,Consolas,monospace; letter-spacing:.6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .lastpop .lp-total{padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:var(--chip); font-weight:700; font-size:.9rem; white-space:nowrap}
+  .lastpop.show{ opacity:1; transform:translateX(-50%) translateY(0) }
+
   /* Footer fisso: Svuota | Copia | Invia */
   .footerbar{
     position:fixed; left:50%; transform:translateX(-50%);
@@ -100,6 +116,12 @@
     </div>
   </div>
 
+  <!-- Popup ultima matricola + totale -->
+  <div class="lastpop" id="lastPop" aria-live="polite">
+    <span class="lp-code" id="lpCode"></span>
+    <span class="lp-total" id="lpTotal"></span>
+  </div>
+
   <!-- Footer fisso: Sx Svuota — Centro Copia — Dx Invia -->
   <div class="footerbar" id="footerBar">
     <button id="clear" class="btn left">Svuota</button>
@@ -128,7 +150,7 @@
   /******** AUDIO BEEP ********/
   let audioReady=false, audioCtx=null;
   function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==="suspended") audioCtx.resume(); audioReady=true; }
-  function beep(freq=920, duration=90, vol=0.08){
+  function beep(freq=920, duration=180, vol=0.08){
     if (!audioReady) return;
     const ctx=audioCtx, o=ctx.createOscillator(), g=ctx.createGain();
     o.type="sine"; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(ctx.destination);
@@ -147,6 +169,12 @@
   const btnCopy=$("#copy"), btnClear=$("#clear"), btnSend=$("#send");
   const drawer=$("#drawer"), openDrawerTop=$("#openDrawerTop"), closeDrawerBtn=$("#closeDrawer"), codeList=$("#codeList");
 
+  // elementi popup
+  const lastPop = $("#lastPop");
+  const lpCode  = $("#lpCode");
+  const lpTotal = $("#lpTotal");
+  let lastPopTimer=null;
+
   /******** ZXing ********/
   const reader = new ZXing.BrowserMultiFormatReader(
     new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS,[
@@ -157,6 +185,8 @@
   );
 
   /******** CORE ********/
+  const fmt4 = s => s.replace(/(.{4})/g, "$1 ").trim();
+
   function sanitizeAndSplit(raw){
     if(!raw) return [];
     let s=String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -185,10 +215,21 @@
           dedup.delete(code);
           const i=bag.indexOf(code); if (i>=0) bag.splice(i,1);
           renderList();
+          // aggiorna il popup con nuovo totale (se visibile)
+          lpTotal.textContent = `Totale: ${bag.length}`;
         }
       };
     });
   }
+
+  function showLastPopup(codeText){
+    lpCode.textContent  = fmt4(codeText);
+    lpTotal.textContent = `Totale: ${bag.length}`;
+    lastPop.classList.add("show");
+    clearTimeout(lastPopTimer);
+    lastPopTimer = setTimeout(()=> lastPop.classList.remove("show"), 2000);
+  }
+
   function addCodes(arr){
     let added=0;
     for(const c of arr){
@@ -197,6 +238,8 @@
     }
     if (added>0){
       if (drawer.classList.contains("open")) renderList();
+      const last = arr[arr.length-1]; // mostra SOLO l'ultima della lettura corrente
+      showLastPopup(last);
       beep(950,90,0.09);
     }
     return added;
@@ -287,7 +330,7 @@
     try{ await navigator.clipboard.writeText(bag.join(' ')); showToast(`Copiati ${bag.length} codici`); }
     catch(e){ showToast("Clipboard non disponibile"); }
   };
-  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderList(); showToast("Svuotato"); };
+  btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderList(); lastPop.classList.remove('show'); showToast("Svuotato"); };
 
   // Drawer (apri/chiudi dal top)
   const toggleDrawer=(open)=> drawer.classList.toggle("open", open);
