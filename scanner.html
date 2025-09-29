@@ -19,7 +19,6 @@
   .video-wrap{position:relative;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(2,6,23,.06);background:#000}
   video#preview{width:100%;height:82vh;min-height:440px;max-height:88vh;object-fit:cover;display:block;background:#000}
 
-  /* Overlay TOP (super light) */
   .ov{position:absolute;left:50%;transform:translateX(-50%);z-index:10040;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     background:var(--glass);backdrop-filter:blur(10px) saturate(1.02);border:1px solid rgba(229,231,235,.65);
     border-radius:16px;padding:6px 8px;box-shadow:var(--shadow);width:calc(100% - 16px);max-width:980px}
@@ -27,10 +26,8 @@
   .btn{height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--border);background:#fff;color:#0f172a;font-weight:700;cursor:pointer}
   .btn:hover{background:#f8fafc}.btn:active{transform:translateY(1px)}
   .btn-icon{width:56px;height:56px;padding:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1}
-  .badge{padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:#f8fafc;font-size:.9rem}
   .chip{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--chip);font-family:ui-monospace,Consolas,monospace;font-size:.9rem}
 
-  /* Drawer Matricole (sopra al video e sopra alla top bar) */
   .drawer{position:absolute;right:12px;bottom:12px;z-index:10050;width:min(380px,calc(100% - 24px));max-height:70vh;display:flex;flex-direction:column;gap:8px;
     background:var(--glass);backdrop-filter:blur(10px) saturate(1.05);border:1px solid rgba(229,231,235,.7);border-radius:16px;box-shadow:var(--shadow);
     overflow:hidden;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
@@ -43,11 +40,9 @@
   .drawer .x{border:none;background:#fee2e2;color:#991b1b;border-radius:10px;padding:6px 8px;cursor:pointer;font-weight:700}
   .drawer .x:hover{filter:brightness(.96)}
 
-  /* Toast (in alto a destra nel video) */
   .toast{position:absolute;right:12px;top:12px;z-index:10060;background:#0ea5e9;color:white;border-radius:12px;padding:8px 12px;box-shadow:var(--shadow);font-weight:700;display:none}
   .toast.show{display:block}
 
-  /* Popup ultima matricola (sopra ai pulsanti, sotto la camera) */
   .lastpop{
     position:fixed; left:50%; transform:translateX(-50%) translateY(10px);
     bottom: calc(env(safe-area-inset-bottom,0px) + var(--footer-h) + 10px);
@@ -63,7 +58,6 @@
   .lastpop .lp-total{padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:var(--chip); font-weight:700; font-size:.9rem; white-space:nowrap}
   .lastpop.show{ opacity:1; transform:translateX(-50%) translateY(0) }
 
-  /* Footer fisso: Svuota | Copia | Invia */
   .footerbar{
     position:fixed; left:50%; transform:translateX(-50%);
     bottom:calc(env(safe-area-inset-bottom,0px) + 0px); z-index:9000;
@@ -80,7 +74,6 @@
   .footerbar .left{justify-self:start;width:100%}
   .footerbar .center{justify-self:center;width:100%}
   .footerbar .right{justify-self:end;width:100%}
-
   @media (max-width:760px){
     video#preview{height:78vh;min-height:360px}
     .btn-icon{width:52px;height:52px;font-size:28px}
@@ -92,7 +85,6 @@
     <div class="video-wrap">
       <video id="preview" playsinline muted></video>
 
-      <!-- Overlay TOP (solo comandi rapidi) -->
       <div class="ov top" id="ovTop">
         <button id="flip"  class="btn btn-icon" title="Cambia camera">↺</button>
         <button id="torch" class="btn btn-icon" title="Torcia">🔦</button>
@@ -100,7 +92,6 @@
         <button id="openDrawerTop" class="btn btn-icon" title="Matricole">≣</button>
       </div>
 
-      <!-- Drawer Matricole -->
       <div class="drawer" id="drawer">
         <div class="head">
           <div class="title">Matricole lette</div>
@@ -110,35 +101,38 @@
         <div class="body"><ul class="list" id="codeList"></ul></div>
       </div>
 
-      <!-- Toast -->
       <div class="toast" id="toast">Pronto</div>
     </div>
   </div>
 
-  <!-- Popup ultima matricola + totale -->
   <div class="lastpop" id="lastPop" aria-live="polite">
     <span class="lp-code" id="lpCode"></span>
     <span class="lp-total" id="lpTotal"></span>
   </div>
 
-  <!-- Footer fisso: Sx Svuota — Centro Copia — Dx Invia -->
   <div class="footerbar" id="footerBar">
     <button id="clear" class="btn left">Svuota</button>
     <button id="copy"  class="btn center">Copia</button>
     <button id="send"  class="btn btn-primary right">Invia</button>
   </div>
 
-  <!-- ZXing UMD -->
+  <!-- Librerie -->
   <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.2/umd/index.min.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <script>
   /******** CONFIG ********/
   const qp = (k, def="") => new URLSearchParams(location.search).get(k) ?? def;
-  const FORWARD_URL = "https://scanner-bridge2.pages.dev/scanner/push"; // bridge CF
+  const FORWARD_URL = "https://scanner-bridge2.pages.dev/scanner/push"; // Fallback bridge
   const STORAGE_KEY = "scanner16.cameraId";
   const CODICE_LEN  = 16;
 
-  const sid = qp("sid",""); // deve arrivare dal bot
+  const sid     = qp("sid","");
+  const purpose = qp("purpose",""); // "assegna" | "restituisci" | "pallet"
+
+  // Telegram WebApp object (solo se siamo in webview Telegram)
   const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (tg) { tg.ready(); tg.expand(); }
 
   /******** UI ********/
   const $  = (s,r=document)=>r.querySelector(s);
@@ -160,14 +154,13 @@
   /******** MODEL ********/
   let scanning=false, devices=[], currentIndex=0, currentTrack=null, torchOn=false;
   const bag=[], dedup=new Set();
-  let lastShown="", lastUiTick=0;
+  let lastShown="";
 
   const video=$("#preview");
   const btnFlip=$("#flip"), btnTorch=$("#torch");
   const btnCopy=$("#copy"), btnClear=$("#clear"), btnSend=$("#send");
   const drawer=$("#drawer"), openDrawerTop=$("#openDrawerTop"), closeDrawerBtn=$("#closeDrawer"), codeList=$("#codeList");
 
-  // elementi popup
   const lastPop = $("#lastPop");
   const lpCode  = $("#lpCode");
   const lpTotal = $("#lpTotal");
@@ -183,9 +176,6 @@
   );
 
   /******** CORE ********/
-  /* Nota: lasciamo la helper fmt4 definita ma NON la usiamo (richiesta: niente split 4-4-4-4) */
-  const fmt4 = s => s.replace(/(.{4})/g, "$1 ").trim();
-
   function sanitizeAndSplit(raw){
     if(!raw) return [];
     let s=String(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -195,6 +185,7 @@
     }
     return [];
   }
+
   function renderList(){
     codeList.innerHTML="";
     if (!bag.length){
@@ -221,12 +212,10 @@
   }
 
   function showLastPopup(codeText){
-    /* NESSUNO split: mostra il codice intero */
     lpCode.textContent  = codeText;
     lpTotal.textContent = `Totale: ${bag.length}`;
     lastPop.classList.add("show");
     clearTimeout(lastPopTimer);
-    /* visibile per 15 secondi */
     lastPopTimer = setTimeout(()=> lastPop.classList.remove("show"), 15000);
   }
 
@@ -260,6 +249,7 @@
       currentIndex=Math.max(0,idx);
     }catch(e){}
   }
+
   async function requestEnvironmentOnce(){
     try{
       const tmp=await navigator.mediaDevices.getUserMedia({
@@ -294,6 +284,7 @@
       try{ reader.reset(); }catch(_){}
     }
   }
+
   function stop(){
     if (!scanning) return;
     scanning=false;
@@ -302,6 +293,7 @@
     currentTrack=null; torchOn=false;
     showToast("In attesa…");
   }
+
   async function flipCamera(){
     if (!devices.length){
       await listCamerasAfterPermission();
@@ -312,6 +304,7 @@
     savePreferredCameraId(devId||"");
     if (scanning){ stop(); await start(devId); } else { await start(devId); }
   }
+
   async function toggleTorch(){
     if (!currentTrack){ showToast("Torcia non disponibile"); return; }
     try{
@@ -332,39 +325,52 @@
   };
   btnClear.onclick = ()=>{ bag.length=0; dedup.clear(); renderList(); lastPop.classList.remove('show'); showToast("Svuotato"); };
 
-  // Drawer (apri/chiudi dal top)
   const toggleDrawer=(open)=> drawer.classList.toggle("open", open);
   openDrawerTop.onclick = ()=>{ renderList(); toggleDrawer(true); };
   closeDrawerBtn.onclick= ()=> toggleDrawer(false);
 
-  // INVIO (POST JSON al bridge)
+  // INVIO verso BOT (WebApp) o fallback HTTP
   btnSend.onclick = async ()=>{
     if (!bag.length){ showToast("Nessun codice da inviare"); return; }
-    if (tg){ tg.sendData(JSON.stringify({ codes: bag })); tg.close(); return; }
-    if (!sid){ showToast("Manca SID (Apri dal bot)"); return; }
 
+    if (tg){ // dentro Telegram → manda WEB_APP_DATA
+      tg.sendData(JSON.stringify({ purpose, sid, codes: bag }));
+      tg.close(); // opzionale: chiude la webview
+      return;
+    }
+
+    // Fallback (aperto fuori da Telegram)
+    if (!sid){ showToast("Manca SID (apri dal bot)"); return; }
     try{
       const res = await fetch(FORWARD_URL, {
         method:"POST", mode:"cors", cache:"no-store", credentials:"omit",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ sid, codes:bag })
+        body: JSON.stringify({ purpose, sid, codes: bag })
       });
-      const text=await res.text().catch(()=>"(no body)");
       if (res.ok){ showToast(`Inviati ${bag.length}`); }
-      else { console.warn("POST failed:", res.status, text); showToast(`Errore invio ${res.status}`); }
+      else { showToast(`Errore invio ${res.status}`); }
     }catch(e){
-      console.error("Network error:", e); showToast("Errore rete");
+      showToast("Errore rete");
     }
   };
 
-  // Gestione visibilità (risparmio batteria)
+  // Gestione visibilità
   document.addEventListener("visibilitychange", ()=>{
     if (document.hidden) stop();
     else start(devices[currentIndex]?.deviceId || getPreferredCameraId() || null);
   });
 
-  // Boot: autostart senza pulsanti
+  // Boot
   (async function boot(){
+    // Banner debug in alto a sinistra
+    document.body.insertAdjacentHTML(
+      "afterbegin",
+      `<div id="tgBanner" style="position:fixed;top:6px;left:6px;z-index:99999;
+       background:${tg?'#16a34a':'#dc2626'};color:white;padding:6px 10px;border-radius:10px;font-weight:800">
+       TG ${tg?'✅':'❌'} | SID=${sid||'—'} | PURPOSE=${purpose||'—'}
+       </div>`
+    );
+
     if (!sid){ showToast("❌ Link senza SID: apri dallo stesso bot"); return; }
     try{ await requestEnvironmentOnce(); } finally {
       await listCamerasAfterPermission();
@@ -376,47 +382,6 @@
 
   // Stop camera quando si lascia la pagina
   window.addEventListener("beforeunload", stop);
-
-
-
-
-  const purpose = qp("purpose","");    // <-- AGGIUNGI QUESTO
-
-  if (tg) { tg.ready(); tg.expand(); } // <-- ready()
-
-  // ... resto invariato ...
-
-  btnSend.onclick = async () => {
-    if (!bag.length){ showToast("Nessun codice da inviare"); return; }
-
-    // ✅ INVIO VERSO IL BOT (update: message.web_app_data)
-    if (tg){
-      tg.sendData(JSON.stringify({ purpose, sid, codes: bag }));  // <-- manda anche purpose & sid
-      tg.close();                                                 // opzionale
-      return;
-    }
-
-    // ♻️ Fallback verso il bridge HTTP (se apri fuori da Telegram)
-    if (!sid){ showToast("Manca SID (Apri dal bot)"); return; }
-    try{
-      const res = await fetch(FORWARD_URL, {
-        method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ purpose, sid, codes: bag })         // <-- anche qui
-      });
-      if (res.ok) showToast(`Inviati ${bag.length}`); else showToast(`Errore invio`);
-    }catch(e){ showToast("Errore rete"); }
-  };
-  // DEBUG banner in alto
-  document.body.insertAdjacentHTML(
-    "afterbegin",
-    `<div id="tgBanner" style="position:fixed;top:6px;left:6px;z-index:99999;
-     background:${tg?'#16a34a':'#dc2626'};color:white;padding:6px 10px;border-radius:10px;font-weight:800">
-     TG ${tg?'✅':'❌'} | SID=${new URLSearchParams(location.search).get('sid')||'—'}
-     | PURPOSE=${new URLSearchParams(location.search).get('purpose')||'—'}
-     </div>`
-  );
-  tg ? tg.showAlert('Sono dentro Telegram ✅') : alert('Fuori da Telegram ❌');
-</script>
-
+  </script>
 </body>
 </html>
