@@ -335,7 +335,7 @@
 
     if (tg){ // dentro Telegram → manda WEB_APP_DATA
       tg.sendData(JSON.stringify({ purpose, sid, codes: bag }));
-      tg.close(); // opzionale: chiude la webview
+      //tg.close(); // opzionale: chiude la webview
       return;
     }
 
