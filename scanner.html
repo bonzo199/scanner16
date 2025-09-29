@@ -406,6 +406,15 @@
       if (res.ok) showToast(`Inviati ${bag.length}`); else showToast(`Errore invio`);
     }catch(e){ showToast("Errore rete"); }
   };
+  // DEBUG banner in alto
+  document.body.insertAdjacentHTML(
+    "afterbegin",
+    `<div id="tgBanner" style="position:fixed;top:6px;left:6px;z-index:99999;
+     background:${tg?'#16a34a':'#dc2626'};color:white;padding:6px 10px;border-radius:10px;font-weight:800">
+     TG ${tg?'✅':'❌'} | SID=${new URLSearchParams(location.search).get('sid')||'—'}
+     | PURPOSE=${new URLSearchParams(location.search).get('purpose')||'—'}
+     </div>`
+  );
 </script>
 
 </body>
