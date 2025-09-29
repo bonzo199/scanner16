@@ -138,7 +138,7 @@
   const CODICE_LEN  = 16;
 
   const sid = qp("sid",""); // deve arrivare dal bot
-  const tg  = window.Telegram ? window.Telegram.WebApp : null; if (tg) tg.expand();
+  const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
   /******** UI ********/
   const $  = (s,r=document)=>r.querySelector(s);
@@ -376,6 +376,37 @@
 
   // Stop camera quando si lascia la pagina
   window.addEventListener("beforeunload", stop);
-  </script>
+
+
+
+
+  const purpose = qp("purpose","");    // <-- AGGIUNGI QUESTO
+
+  if (tg) { tg.ready(); tg.expand(); } // <-- ready()
+
+  // ... resto invariato ...
+
+  btnSend.onclick = async () => {
+    if (!bag.length){ showToast("Nessun codice da inviare"); return; }
+
+    // ✅ INVIO VERSO IL BOT (update: message.web_app_data)
+    if (tg){
+      tg.sendData(JSON.stringify({ purpose, sid, codes: bag }));  // <-- manda anche purpose & sid
+      tg.close();                                                 // opzionale
+      return;
+    }
+
+    // ♻️ Fallback verso il bridge HTTP (se apri fuori da Telegram)
+    if (!sid){ showToast("Manca SID (Apri dal bot)"); return; }
+    try{
+      const res = await fetch(FORWARD_URL, {
+        method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ purpose, sid, codes: bag })         // <-- anche qui
+      });
+      if (res.ok) showToast(`Inviati ${bag.length}`); else showToast(`Errore invio`);
+    }catch(e){ showToast("Errore rete"); }
+  };
+</script>
+
 </body>
 </html>
